@@ -11,7 +11,7 @@
     "dev": "env-cmd -f ./config/dev.env nodemon src/index.js",
     "prepare-test-data": "env-cmd -f ./config/dev.env node src/db/prepare-test-data.js",
     "db-migrate": "node node_modules/db-migrate/bin/db-migrate",
-    "db-migrate-dev": "env-cmd -f ./config/dev.env npm run db-migrate",
+    "db-migrate-dev": "env-cmd -f ./config/dev.env npm run db-migrate up",
     "start": "node src/index.js",
     "heroku-postbuild": "npm run db-migrate -- up --env prod"
   },
