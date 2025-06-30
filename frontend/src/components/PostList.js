@@ -11,10 +11,10 @@ import {
   CircularProgress,
 } from '@chakra-ui/react';
 import Post from './Post';
-import { createLoadingAndErrorSelector, postListSelector } from '../selectors';
+import { createLoadingAndErrorSelector, postListSelector, userSelector } from '../selectors';
 import { getPostList } from '../actions/postList';
 
-const PostList = ({ isLoading, error, postList, getPostList }) => {
+const PostList = ({ user, isLoading, error, postList, getPostList }) => {
   const { subreddit } = useParams();
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const PostList = ({ isLoading, error, postList, getPostList }) => {
   return (
     <Box>
       <Heading>{subreddit ? `r/${subreddit}` : 'Home'}</Heading>
-      {postList.length > 0 ? (
+      {postList.length > 0 && user ? (
         postList.map(
           ({
             id,
@@ -68,9 +68,9 @@ const PostList = ({ isLoading, error, postList, getPostList }) => {
             </Box>
           )
         )
-      ) : (
+      ) : user ? (
         <Text m={5}>There are no posts to display.</Text>
-      )}
+      ) : null}
     </Box>
   );
 };
@@ -83,6 +83,7 @@ const mapStateToProps = (state) => ({
   isLoading: loadingSelector(state),
   error: errorSelector(state),
   postList: postListSelector(state),
+  user: userSelector(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

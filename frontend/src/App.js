@@ -22,24 +22,24 @@ function App() {
           <Flex justifyContent="center">
             <Box width={['95%', '80%', '70%', '60%']} mb={10}>
               <Switch>
-                <Route path="/r/:subreddit/comments/:id">
+                <PrivateRoute path="/r/:subreddit/comments/:id">
                   <CommentsPage />
-                </Route>
+                </PrivateRoute>
                 <PublicRoute path="/login">
                   <LoginPage />
                 </PublicRoute>
-                <PublicRoute path="/register">
+                <PrivateRoute path="/register">
                   <RegisterPage />
-                </PublicRoute>
+                </PrivateRoute>
                 <PrivateRoute path="/submit">
                   <CreatePostPage />
                 </PrivateRoute>
                 <PrivateRoute path="/subreddits/create">
                   <CreateSubredditPage />
                 </PrivateRoute>
-                <Route path="/r/:subreddit">
+                <PrivateRoute path="/r/:subreddit">
                   <PostList />
-                </Route>
+                </PrivateRoute>
                 <Route path="/">
                   <PostList />
                 </Route>

@@ -4,15 +4,19 @@ import { withRouter } from 'react-router-dom';
 import {
   Box,
   Stack,
+  Checkbox,
+  Select,
   FormControl,
   FormErrorMessage,
   Input,
   Button,
   Alert,
   AlertIcon,
+  FormLabel
 } from '@chakra-ui/react';
 import { startRegister } from '../actions/auth';
 import { createLoadingAndErrorSelector } from '../selectors';
+import { getSubreddits } from '../actions/subreddits'
 
 class RegisterPage extends React.Component {
   constructor(props) {
@@ -23,8 +27,24 @@ class RegisterPage extends React.Component {
       password: '',
       confirmPassword: '',
       doNotMatchError: '',
+      isAdmin: false,
+      isBot: false,
+      selectedSubreddit: '',
+      availableSubreddits: []
     };
+
+    
   }
+
+
+
+
+  async componentDidMount() {
+    const subreddits = await this.props.getSubreddits();
+    console.log(subreddits)
+    this.setState({ availableSubreddits: subreddits });
+  }
+  
 
   componentDidUpdate(prevProps, prevState) {
     const { password, confirmPassword } = this.state;
@@ -55,7 +75,7 @@ class RegisterPage extends React.Component {
   };
 
   render() {
-    const { username, password, confirmPassword, doNotMatchError } = this.state;
+    const { username, password, confirmPassword, doNotMatchError, isAdmin, isBot, selectedSubreddit, availableSubreddits } = this.state;
     const { isLoading, error } = this.props;
     return (
       <Box w={300} m="auto">
@@ -106,6 +126,44 @@ class RegisterPage extends React.Component {
               />
               <FormErrorMessage>{doNotMatchError}</FormErrorMessage>
             </FormControl>
+            <FormControl>
+              <Checkbox
+                isChecked={isAdmin}
+                onChange={(e) => this.setState({ isAdmin: e.target.checked })}
+              >
+                Admin User
+              </Checkbox>
+            </FormControl>
+
+            <FormControl>
+              <Checkbox
+                isChecked={isBot}
+                onChange={(e) => this.setState({ isBot: e.target.checked })}
+              >
+                Bot User
+              </Checkbox>
+            </FormControl>
+
+            {!isAdmin && (
+              <FormControl>
+                <FormLabel htmlFor="subreddit-select">Subreddit to access</FormLabel>
+                <Select
+                  id="subreddit-select"
+                  placeholder="Select subreddit"
+                  variant="filled"
+                  size="md"
+                  value={selectedSubreddit}
+                  onChange={(e) => this.setState({ selectedSubreddit: e.target.value })}
+                  isRequired
+                >
+                  {availableSubreddits.map((sub) => (
+                    <option key={sub.name} value={sub.name}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             <Button type="submit" isLoading={isLoading}>
               Register
             </Button>
@@ -124,11 +182,13 @@ const { loadingSelector, errorSelector } = createLoadingAndErrorSelector(
 const mapStateToProps = (state) => ({
   isLoading: loadingSelector(state),
   error: errorSelector(state),
+  subreddits: getSubreddits(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
   startRegister: (username, password) =>
     dispatch(startRegister(username, password)),
+  getSubreddits: () => dispatch(getSubreddits()),
 });
 
 export default withRouter(

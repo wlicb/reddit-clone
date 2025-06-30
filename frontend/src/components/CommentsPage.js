@@ -13,7 +13,7 @@ import {
 import Post from './Post';
 import CommentsThread from './CommentsThread';
 import WriteCommentBox from './WriteCommentBox';
-import LoginAndRegisterButtons from './LoginAndRegisterButtons';
+import LoginButton from './LoginButton';
 import {
   createLoadingAndErrorSelector,
   postSelector,
@@ -21,6 +21,7 @@ import {
   userSelector,
 } from '../selectors';
 import { getPostAndComments } from '../actions';
+import { HStack } from '@chakra-ui/react';
 
 const getCommentsWithChildren = (comments) => {
   const commentsWithChildren = comments.map((comment) => ({
@@ -118,9 +119,11 @@ const CommentsPage = ({
           justifyContent="space-between"
         >
           <Heading size="md" color="gray.500">
-            Log in or register to leave a comment
+            Log in to leave a comment
           </Heading>
-          <LoginAndRegisterButtons />
+          <HStack>
+            <LoginButton />
+          </HStack>
         </Flex>
       )}
       <br />

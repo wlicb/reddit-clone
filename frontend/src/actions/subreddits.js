@@ -12,12 +12,14 @@ export const getSubreddits = () => async (dispatch) => {
     const response = await axios.get('/subreddits');
     dispatch(setSubreddits(response.data));
     dispatch({ type: 'GET_SUBREDDITS_SUCCESS' });
+    return response.data
   } catch (e) {
     dispatch({
       type: 'GET_SUBREDDITS_FAILURE',
       message: e.message,
       response: e.response,
     });
+    return []
   }
 };
 

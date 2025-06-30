@@ -1,10 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
 import { HStack, Button } from '@chakra-ui/react';
 
-const LoginAndRegisterButtons = () => {
+const LoginButton = () => {
   const location = useLocation();
   return (
-    <HStack>
       <Button
         as={Link}
         to={{
@@ -16,19 +15,7 @@ const LoginAndRegisterButtons = () => {
       >
         Login
       </Button>
-      <Button
-        as={Link}
-        to={{
-          pathname: '/register',
-          state: {
-            prevPathname: location.pathname,
-          },
-        }}
-      >
-        Register
-      </Button>
-    </HStack>
   );
 };
 
-export default LoginAndRegisterButtons;
+export default LoginButton;
