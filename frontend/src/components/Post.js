@@ -119,9 +119,9 @@ const Post = ({
             </Box>
           </Flex>
         </Box>
-        {user && user.username === author && (
+        {user && (user.username === author || user.isadmin === "true") && (
           <HStack alignItems="flex-start">
-            {isTextPost && !isEditing && (
+            {isTextPost && !isEditing && user.username === author && (
               <IconButton
                 onClick={() => setIsEditing(true)}
                 backgroundColor="inherit"

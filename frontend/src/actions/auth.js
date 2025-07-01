@@ -20,6 +20,7 @@ export const startLogin = (username, password) => async (dispatch) => {
       password,
     });
     const { user, token } = response.data;
+    console.log(user)
     dispatch(login(user, token));
     dispatch({ type: 'LOGIN_SUCCESS' });
   } catch (e) {

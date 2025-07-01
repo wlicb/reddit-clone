@@ -92,9 +92,11 @@ const Navbar = ({
               )}
             </MenuList>
           </Menu>
-            <Button display={['none', 'flex']} as={Link} to="/submit">
-              Submit
-            </Button>
+            {(user.isadmin === "true") && (
+              <Button display={['none', 'flex']} as={Link} to="/submit">
+                Submit
+              </Button>)
+            }
         </HStack>
       )}
       <Spacer />
@@ -109,9 +111,9 @@ const Navbar = ({
               <MenuItem display={['block', 'none']} as={Link} to="/submit">
                 Submit post
               </MenuItem>
-              <MenuItem as={Link} to="/subreddits/create">
+              {(user.isadmin === "true") && (<MenuItem as={Link} to="/subreddits/create">
                 Create subreddit
-              </MenuItem>
+              </MenuItem>)}
               <MenuItem
                 onClick={async () => {
                   await startLogout();
@@ -121,7 +123,8 @@ const Navbar = ({
               </MenuItem>
             </MenuList>
           </Menu>
-          <RegisterButton />
+          {(user.isadmin === "true") && (
+          <RegisterButton />)}
         </HStack>
       ) : (
         <HStack>

@@ -116,9 +116,9 @@ const Comment = ({
             </Box>
           </Flex>
         </Box>
-        {user && user.username && user.username === author && (
+        {user && ((user.username && user.username === author) || user.isadmin === "true") && (
           <HStack alignItems="flex-start">
-            {!isEditing && (
+            {!isEditing && user.username === author && (
               <IconButton
                 backgroundColor="inherit"
                 onClick={() => setIsEditing(true)}
