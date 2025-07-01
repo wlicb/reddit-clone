@@ -73,11 +73,15 @@ const Navbar = ({
               </MenuItem>
               <MenuDivider />
               {subreddits.map(({ name }) => (
-                <MenuItem
-                  key={name}
-                  as={Link}
-                  to={`/r/${name}`}
-                >{`r/${name}`}</MenuItem>
+                (name === user.selectedsubreddit || user.isadmin === "true") && (
+                  <MenuItem
+                    key={name}
+                    as={Link}
+                    to={`/r/${name}`}
+                  >
+                    {`r/${name}`}
+                  </MenuItem>
+                )
               ))}
               {error && (
                 <Alert status="error">

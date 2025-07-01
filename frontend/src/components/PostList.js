@@ -52,7 +52,7 @@ const PostList = ({ user, isLoading, error, postList, getPostList }) => {
             author_name,
             subreddit_name,
           }) => (
-            <Box key={`${id}-${title}`} my={4}>
+            subreddit_name === user.selectedsubreddit && <Box key={`${id}-${title}`} my={4}>
               <Post
                 id={id}
                 type={type}
