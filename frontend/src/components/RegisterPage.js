@@ -41,7 +41,6 @@ class RegisterPage extends React.Component {
 
   async componentDidMount() {
     const subreddits = await this.props.getSubreddits();
-    console.log(subreddits)
     this.setState({ availableSubreddits: subreddits });
   }
   
@@ -59,12 +58,12 @@ class RegisterPage extends React.Component {
   handleSubmit = async (e) => {
     try {
       e.preventDefault();
-      const { username, password, confirmPassword } = this.state;
+      const { username, password, confirmPassword, isAdmin, isBot, selectedSubreddit } = this.state;
       const { startRegister, history, location } = this.props;
       if (password !== confirmPassword) {
         return this.setState({ doNotMatchError: 'Passwords do not match' });
       }
-      await startRegister(username, password);
+      await startRegister(username, password, isAdmin.toString(), isBot.toString(), selectedSubreddit);
       const { error } = this.props;
       if (!error) {
         history.push(
@@ -186,8 +185,8 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  startRegister: (username, password) =>
-    dispatch(startRegister(username, password)),
+  startRegister: (username, password, isAdmin, isBot, selectedSubreddit) =>
+    dispatch(startRegister(username, password, isAdmin, isBot, selectedSubreddit)),
   getSubreddits: () => dispatch(getSubreddits()),
 });
 

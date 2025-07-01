@@ -63,12 +63,22 @@ export const startLogout = () => async (dispatch, getState) => {
   }
 };
 
-export const startRegister = (username, password) => async (dispatch) => {
+export const startRegister = (username, password, isAdmin, isBot, selectedSubreddit) => async (dispatch) => {
   try {
     dispatch({ type: 'REGISTER_REQUEST' });
+    console.log({
+      username,
+      password,
+      isAdmin, 
+      isBot, 
+      selectedSubreddit
+    })
     const response = await axios.post('/users', {
       username,
       password,
+      isAdmin, 
+      isBot, 
+      selectedSubreddit
     });
     const { user, token } = response.data;
     dispatch(login(user, token));

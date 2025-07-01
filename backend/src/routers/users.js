@@ -54,25 +54,36 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { username, password } = req.body
+    const { username, password, isAdmin, isBot, selectedSubreddit } = req.body
+    console.log(req.body)
     if (!username) {
       throw new Error('Username is required')
     }
     if (!password) {
       throw new Error('Password is required')
     }
+    if (!isAdmin) {
+      throw new Error('Admin info is required')
+    }
+    if (!isBot) {
+      throw new Error('Bot info is required')
+    }
+    if (isAdmin == "false" && !selectedSubreddit) {
+      throw new Error('Selected Subreddit is required for non-admin users')
+    }
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const insertUserStatement = `
-      insert into users(username, password)
-      values($1, $2)
+      insert into users(username, password, isAdmin, isBot, selectedSubreddit)
+      values($1, $2, $3, $4, $5)
       returning *
     `
     let rows
     try {
-      ({ rows } = await query(insertUserStatement, [username, hashedPassword]))
+      ({ rows } = await query(insertUserStatement, [username, hashedPassword, isAdmin, isBot, selectedSubreddit]))
     } catch (e) {
-      res.status(409).send({ error: 'Username is already taken' })
+      console.log(e)
+      return res.status(409).send({ error: 'Username is already taken' })
     }
     
     const { user, token } = await addToken(rows[0].id)
