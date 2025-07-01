@@ -22,22 +22,35 @@ function App() {
           <Flex justifyContent="center">
             <Box width={['95%', '80%', '70%', '60%']} mb={10}>
               <Switch>
-                <PrivateRoute path="/r/:subreddit/comments/:id">
+                <PrivateRoute path="/r/:subreddit/comments/:id"
+                check={(u) => {
+                    const path = window.location.pathname;
+                    const match = path.match(/^\/r\/([^/]+)/);
+                    return (match && u.selectedsubreddit === match[1]) || u.isadmin === 'true';
+                  }}>
                   <CommentsPage />
                 </PrivateRoute>
-                <PublicRoute path="/login">
+                <PublicRoute path="/login" >
                   <LoginPage />
                 </PublicRoute>
-                <PrivateRoute path="/register">
+                <PrivateRoute path="/register" 
+                  check={(u) => u.isadmin === 'true'}>
                   <RegisterPage />
                 </PrivateRoute>
-                <PrivateRoute path="/submit">
+                <PrivateRoute path="/submit"
+                  check={(u) => u.isadmin === 'true'}>
                   <CreatePostPage />
                 </PrivateRoute>
-                <PrivateRoute path="/subreddits/create">
+                <PrivateRoute path="/subreddits/create"
+                  check={(u) => u.isadmin === 'true'}>
                   <CreateSubredditPage />
                 </PrivateRoute>
-                <PrivateRoute path="/r/:subreddit">
+                <PrivateRoute path="/r/:subreddit"
+                  check={(u) => {
+                    const path = window.location.pathname;
+                    const match = path.match(/^\/r\/([^/]+)/);
+                    return (match && u.selectedsubreddit === match[1]) || u.isadmin === 'true';
+                  }}>
                   <PostList />
                 </PrivateRoute>
                 <Route path="/">
