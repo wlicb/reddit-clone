@@ -1,6 +1,6 @@
 const express = require('express')
 const { query } = require('../db')
-const { updateTableRow, userIsModerator } = require('../db/utils')
+const { updateTableRow, userIsModerator, logAction } = require('../db/utils')
 const auth = require('../middleware/auth')()
 const optionalAuth = require('../middleware/auth')(true)
 

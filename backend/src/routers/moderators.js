@@ -1,6 +1,6 @@
 const express = require('express')
 const { query } = require('../db')
-const { selectModeratorsStatement, userIsModerator } = require('../db/utils')
+const { selectModeratorsStatement, userIsModerator, logAction } = require('../db/utils')
 const auth = require('../middleware/auth')()
 
 const router = express.Router()

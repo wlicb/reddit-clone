@@ -53,8 +53,18 @@ const userIsModerator = async (username, subreddit) => {
   return !!moderator
 }
 
+const logAction = async ( userId, action, targetId = null, targetType = null, metadata = {} ) => {
+  const sql = `
+    INSERT INTO logs (user_id, action, target_id, target_type, metadata)
+    VALUES ($1, $2, $3, $4, $5)
+  `;
+  await query(sql, [userId, action, targetId, targetType, metadata]);
+}
+
+
 module.exports = {
   updateTableRow,
   selectModeratorsStatement,
-  userIsModerator
+  userIsModerator,
+  logAction
 }

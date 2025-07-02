@@ -2,6 +2,8 @@ const express = require('express')
 const { query } = require('../db')
 const auth = require('../middleware/auth')()
 
+import { logAction } from '../db/utils'
+
 const router = express.Router()
 
 router.get('/', async (req, res) => {

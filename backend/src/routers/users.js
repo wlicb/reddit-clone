@@ -5,6 +5,8 @@ const { query } = require('../db')
 const { updateTableRow } = require('../db/utils')
 const auth = require('../middleware/auth')()
 
+import { logAction } from '../db/utils'
+
 const router = express.Router()
 
 const getPublicUser = (user) => {
