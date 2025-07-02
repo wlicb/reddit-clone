@@ -2,7 +2,7 @@ const express = require('express')
 const { query } = require('../db')
 const auth = require('../middleware/auth')()
 
-import { logAction } from '../db/utils'
+const { logAction } = require('../db/utils')
 
 const router = express.Router()
 

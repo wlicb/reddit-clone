@@ -2,10 +2,9 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { query } = require('../db')
-const { updateTableRow } = require('../db/utils')
+const { updateTableRow, logAction } = require('../db/utils')
 const auth = require('../middleware/auth')()
 
-import { logAction } from '../db/utils'
 
 const router = express.Router()
 
@@ -56,7 +55,7 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { username, password, isAdmin, isBot, selectedSubreddit } = req.body
+    const { username, password, isAdmin, isBot, selectedSubreddit, registeredBy } = req.body
     console.log(req.body)
     if (!username) {
       throw new Error('Username is required')
@@ -70,6 +69,7 @@ router.post('/', async (req, res) => {
     if (!isBot) {
       throw new Error('Bot info is required')
     }
+    console.log(registeredBy)
     if (isAdmin == "false" && !selectedSubreddit) {
       throw new Error('Selected Subreddit is required for non-admin users')
     }
@@ -121,6 +121,9 @@ router.post('/login', async (req, res) => {
     }
 
     const { user, token } = await addToken(rows[0].id)
+    console.log(user.id)
+
+    await logAction({ userId: user.id, action: 'login', metadata: { token: token } });
 
     res.send({
       user: getPublicUser(user),
@@ -128,11 +131,14 @@ router.post('/login', async (req, res) => {
     })
 
   } catch (e) {
+    console.log(e)
     res.status(400).send({ error: e.message })
   }
 })
 
 router.post('/logout', auth, async (req, res) => {
+  if (!req.user)
+    return res.send({})
   const tokens = req.user.tokens.filter((token) => token !== req.token)
   const setUserTokensStatement = `
     update users
@@ -140,6 +146,7 @@ router.post('/logout', auth, async (req, res) => {
     where id = $2
   `
   const { rows: [user] } = await query(setUserTokensStatement, [tokens, req.user.id])
+  await logAction({ userId: req.user.id, action: 'logout', metadata: { token: req.token } });
   delete req.user
   delete req.token
   res.send(user)

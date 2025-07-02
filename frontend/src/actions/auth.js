@@ -2,7 +2,7 @@ import axios from '../axios-config';
 import { editPost } from './post';
 import { setPostList } from './postList';
 import { setComments } from './comments';
-import { commentsSelector, postListSelector } from '../selectors';
+import { commentsSelector, postListSelector, userSelector } from '../selectors';
 
 export const login = (user, token) => ({
   type: 'LOGIN',
@@ -64,7 +64,7 @@ export const startLogout = () => async (dispatch, getState) => {
   }
 };
 
-export const startRegister = (username, password, isAdmin, isBot, selectedSubreddit) => async (dispatch) => {
+export const startRegister = (username, password, isAdmin, isBot, selectedSubreddit) => async (dispatch, getState) => {
   try {
     dispatch({ type: 'REGISTER_REQUEST' });
     console.log({
@@ -74,12 +74,14 @@ export const startRegister = (username, password, isAdmin, isBot, selectedSubred
       isBot, 
       selectedSubreddit
     })
+    const registeredBy = userSelector(getState()).username
     const response = await axios.post('/users', {
       username,
       password,
       isAdmin, 
       isBot, 
-      selectedSubreddit
+      selectedSubreddit,
+      registeredBy
     });
     const { user, token } = response.data;
     dispatch(login(user, token));

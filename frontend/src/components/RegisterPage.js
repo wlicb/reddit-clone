@@ -63,7 +63,7 @@ class RegisterPage extends React.Component {
       if (password !== confirmPassword) {
         return this.setState({ doNotMatchError: 'Passwords do not match' });
       }
-      await startRegister(username, password, isAdmin.toString(), isBot.toString(), selectedSubreddit);
+      await startRegister(username, password, isAdmin.toString(), isBot.toString(), selectedSubreddit, this.state);
       const { error } = this.props;
       if (!error) {
         history.push(
