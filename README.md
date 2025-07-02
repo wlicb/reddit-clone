@@ -71,7 +71,7 @@ JWT_SECRET=<YOUR_SECRET>
 
 ```
 cd backend
-npm run db-migrate up
+npm run db-migrate-dev
 ```
 
 ## Usage
