@@ -96,6 +96,7 @@ router.post('/', auth, async (req, res) => {
       parent_comment_id
     ])
 
+
     // Automatically upvote own comment
     const createVoteStatement = `insert into comment_votes values ($1, $2, $3)`
     await query(createVoteStatement, [req.user.id, id, 1])
@@ -104,7 +105,7 @@ router.post('/', auth, async (req, res) => {
       ${selectAllCommentsStatement}
       having c.id = $2
     `
-
+    await logAction({ userId: req.user.id, action: 'add_comment', targetId: id, targetType: "comment", metadata: { body: body, post_id: post_id, parent_comment_id: parent_comment_id } });
     const { rows: [comment] } = await query(selectInsertedCommentStatement, [req.user.id, id])
 
     res.status(201).send(comment)
@@ -123,10 +124,13 @@ router.put('/:id', auth, async (req, res) => {
     }
     if ((comment.author_id !== req.user.id)
         && (await userIsModerator(req.user.username, comment.subreddit_name) === false)) {
-      return res.status(403).send({ error: 'You must the comment author to edit it' })
+      return res.status(403).send({ error: 'You must be the comment author to edit it' })
     }
 
     const updatedComment = await updateTableRow('comments', id, ['body'], req.body)
+
+    await logAction({ userId: req.user.id, action: 'edit_comment', targetId: id, targetType: "comment", metadata: { body: req.body.body } });
+
 
     res.send(updatedComment)
   } catch (e) {
@@ -149,6 +153,7 @@ router.delete('/:id', auth, async (req, res) => {
     // const deleteCommentStatement = `delete from comments where id = $1 returning *`
     // const { rows: [deletedComment] } = await query(deleteCommentStatement, [id])
     
+    
     const setFieldsToNullStatement = `
       update comments
       set body = null,
@@ -158,6 +163,8 @@ router.delete('/:id', auth, async (req, res) => {
     `
 
     const { rows: [deletedComment] } = await query(setFieldsToNullStatement, [id])
+
+    await logAction({ userId: req.user.id, action: 'delete_comment', targetId: id, targetType: "comment", metadata: { } });
 
     res.send(deletedComment)
   } catch (e) {

@@ -70,6 +70,8 @@ router.post('/', auth, async (req, res) => {
 
     await query(insertModeratorStatement, [req.user.id, subreddit.id])
 
+    await logAction({ userId: req.user.id, action: 'add_subreddit', targetId: subreddit.id, targetType: "subreddit", metadata: { name: name, description: description } });
+
     res.send(subreddit)
   } catch (e) {
     res.status(400).send({ error: e.message })

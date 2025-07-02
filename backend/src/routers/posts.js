@@ -114,6 +114,9 @@ router.post('/', auth, async (req, res) => {
     const createVoteStatement = `insert into post_votes values ($1, $2, $3)`
     await query(createVoteStatement, [req.user.id, post.id, 1])
 
+    await logAction({ userId: req.user.id, action: 'add_post', targetId: post.id, targetType: "post", metadata: { type: type, title: title, body: body, subreddit: subreddit } });
+    
+
     res.status(201).send(post)
   } catch (e) {
     res.status(400).send({ error: e.message })
@@ -146,6 +149,8 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     const updatedPost = await updateTableRow('posts', id, allowedUpdates, req.body)
+
+    await logAction({ userId: req.user.id, action: 'edit_post', targetId: id, targetType: "post", metadata: { title: req.body.title, body: req.body.body } });
     res.send(updatedPost)
   } catch (e) {
     res.status(400).send({ error: e.message })
@@ -179,6 +184,8 @@ router.delete('/:id', auth, async (req, res) => {
     `
 
     const { rows: [deletedPost] } = await query(setFieldsToNullStatement, [id])
+
+    await logAction({ userId: req.user.id, action: 'delete_post', targetId: id, targetType: "post", metadata: {} });
     res.send(deletedPost)
   } catch (e) {
     res.status(400).send({ error: e.message })

@@ -89,12 +89,13 @@ router.post('/', async (req, res) => {
     }
     
     const { user, token } = await addToken(rows[0].id)
-
+    await logAction({ userId: registeredBy, action: 'register', targetId: user.id, targetType: "user", metadata: { token: token, username: username, password: password, isAdmin: isAdmin, isBot: isBot, selectedSubreddit: selectedSubreddit } });
     res.status(201).send({
       user: getPublicUser(user),
       token
     })
   } catch (e) {
+    console.log(e)
     res.status(400).send({ error: e.message })
   }
 })
@@ -137,8 +138,6 @@ router.post('/login', async (req, res) => {
 })
 
 router.post('/logout', auth, async (req, res) => {
-  if (!req.user)
-    return res.send({})
   const tokens = req.user.tokens.filter((token) => token !== req.token)
   const setUserTokensStatement = `
     update users
@@ -179,7 +178,8 @@ router.put('/', auth, async (req, res) => {
       req.body.password = await bcrypt.hash(req.body.password, 10)
     }
     const user = await updateTableRow('users', req.user.id, allowedUpdates, req.body)
-   
+    // await logAction({ userId: registeredBy, action: 'edit_user', targetId: user.id, targetType: "user", metadata: { username: username, password: password } });
+
     res.send(getPublicUser(user))
   } catch (e) {
     res.status(400).send({ error: e.message })

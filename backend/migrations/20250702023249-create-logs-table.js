@@ -21,7 +21,6 @@ exports.up = function (db) {
       user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
       action VARCHAR(50) NOT NULL,
       target_id INTEGER,
-      target_type VARCHAR(50),
       metadata JSONB,
       timestamp TIMESTAMPTZ DEFAULT now()
     );

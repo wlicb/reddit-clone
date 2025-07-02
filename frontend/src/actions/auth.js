@@ -74,7 +74,7 @@ export const startRegister = (username, password, isAdmin, isBot, selectedSubred
       isBot, 
       selectedSubreddit
     })
-    const registeredBy = userSelector(getState()).username
+    const registeredBy = userSelector(getState()).id
     const response = await axios.post('/users', {
       username,
       password,
