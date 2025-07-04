@@ -152,11 +152,11 @@ class RegisterPage extends React.Component {
                   variant="filled"
                   size="md"
                   value={selectedSubreddit}
-                  onChange={(e) => this.setState({ selectedSubreddit: e.target.value })}
+                  onChange={(e) => this.setState({ selectedSubreddit: parseInt(e.target.value) })}
                   isRequired
                 >
                   {availableSubreddits.map((sub) => (
-                    <option key={sub.name} value={sub.name}>
+                    <option key={sub.id} value={sub.name}>
                       {sub.name}
                     </option>
                   ))}

@@ -19,7 +19,7 @@ exports.up = function(db) {
     ALTER TABLE users
       ADD COLUMN isAdmin VARCHAR(10),
       ADD COLUMN isBot VARCHAR(10),
-      ADD COLUMN selectedSubreddit VARCHAR(255);
+      ADD COLUMN selectedSubreddit VARCHAR(25);
   `);
 };
 

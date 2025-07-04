@@ -3,6 +3,8 @@ const { query } = require('../db')
 const { updateTableRow, userIsModerator, logAction } = require('../db/utils')
 const auth = require('../middleware/auth')()
 const optionalAuth = require('../middleware/auth')(true)
+const adminAuth = require('../middleware/admin_auth')()
+const subredditAuth = require('../utils/subreddit_auth')
 
 const router = express.Router()
 
@@ -27,7 +29,24 @@ const selectAllCommentsStatement = `
   group by c.id
 `
 
-router.get('/', async (req, res) => {
+const selectPostStatement = `
+  select
+    p.id, p.type, p.title, p.body, p.created_at, p.updated_at,
+    max(u.username) author_name,
+    cast(coalesce(sum(pv.vote_value), 0) as int) votes,
+    max(upv.vote_value) has_voted,
+    max(sr.name) subreddit_name
+  from posts p
+  left join users u on p.author_id = u.id
+  inner join subreddits sr on p.subreddit_id = sr.id
+  left join post_votes pv on p.id = pv.post_id
+  left join post_votes upv on upv.post_id = p.id and upv.user_id = $1
+  group by p.id
+  having p.id = $2
+`
+
+
+router.get('/', auth, adminAuth, async (req, res) => {
   try {
     const selectCommentsStatement = `select * from comments`
     const { rows } = await query(selectCommentsStatement)
@@ -37,24 +56,9 @@ router.get('/', async (req, res) => {
   }
 })
 
-router.get('/:post_id', optionalAuth, async (req, res) => {
+router.get('/:post_id', auth, async (req, res) => {
   try {
     const { post_id } = req.params
-    const selectPostStatement = `
-      select
-      p.id, p.type, p.title, p.body, p.created_at, p.updated_at,
-      max(u.username) author_name,
-      cast(coalesce(sum(pv.vote_value), 0) as int) votes,
-      max(upv.vote_value) has_voted,
-      max(sr.name) subreddit_name
-      from posts p
-      left join users u on p.author_id = u.id
-      inner join subreddits sr on p.subreddit_id = sr.id
-      left join post_votes pv on p.id = pv.post_id
-      left join post_votes upv on upv.post_id = p.id and upv.user_id = $1
-      group by p.id
-      having p.id = $2
-    `
 
     const selectCommentsStatement = `
       ${selectAllCommentsStatement}
@@ -65,8 +69,20 @@ router.get('/:post_id', optionalAuth, async (req, res) => {
     const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
     const { rows: comments } = await query(selectCommentsStatement, [user_id, post_id])
 
+
     if (!post) {
       return res.status(404).send({ error: 'Could not find post with that id' })
+    }
+
+    let auth = null;
+    let { subreddit } = post.subreddit_name
+    if (subreddit) {
+      try {
+        auth = await subredditAuth(req, subreddit);
+      } catch (err) {
+        return res.status(401).send({ error: err.message });
+      }
+
     }
 
     res.send({ post, comments })
@@ -84,6 +100,24 @@ router.post('/', auth, async (req, res) => {
     if (!post_id) {
       throw new Error('Must specify post to comment on')
     }
+
+    const user_id = req.user ? req.user.id : -1
+    const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
+    if (!post) {
+      return res.status(404).send({ error: 'Could not find post with that id' })
+    }
+
+    let auth = null;
+    let { subreddit } = post.subreddit_name
+    if (subreddit) {
+      try {
+        auth = await subredditAuth(req, subreddit);
+      } catch (err) {
+        return res.status(401).send({ error: err.message });
+      }
+
+    }
+
     const insertCommentStatement = `
       insert into comments(body, author_id, post_id, parent_comment_id)
       values($1, $2, $3, $4)
@@ -105,9 +139,9 @@ router.post('/', auth, async (req, res) => {
       ${selectAllCommentsStatement}
       having c.id = $2
     `
+
     await logAction({ userId: req.user.id, action: 'add_comment', targetId: id, targetType: "comment", metadata: { body: body, post_id: post_id, parent_comment_id: parent_comment_id } });
     const { rows: [comment] } = await query(selectInsertedCommentStatement, [req.user.id, id])
-
     res.status(201).send(comment)
   } catch (e) {
     res.status(400).send({ error: e.message })
@@ -117,11 +151,32 @@ router.post('/', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params
+    
 
     const { rows: [comment] } = await query(selectCommentStatement, [id])
     if (!comment) {
       return res.status(404).send({ error: 'Could not find comment with that id' })
     }
+
+    const post_id = comment.post_id
+    const user_id = req.user ? req.user.id : -1
+    const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
+    if (!post) {
+      return res.status(404).send({ error: 'Could not find post with that id' })
+    }
+
+    let auth = null;
+    let { subreddit } = post.subreddit_name
+    if (subreddit) {
+      try {
+        auth = await subredditAuth(req, subreddit);
+      } catch (err) {
+        return res.status(401).send({ error: err.message });
+      }
+
+    }
+
+
     if ((comment.author_id !== req.user.id)
         && (await userIsModerator(req.user.username, comment.subreddit_name) === false)) {
       return res.status(403).send({ error: 'You must be the comment author to edit it' })
@@ -145,6 +200,26 @@ router.delete('/:id', auth, async (req, res) => {
     if (!comment) {
       return res.status(404).send({ error: 'Could not find comment with that id' })
     }
+
+    const post_id = comment.post_id
+    const user_id = req.user ? req.user.id : -1
+    const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
+    if (!post) {
+      return res.status(404).send({ error: 'Could not find post with that id' })
+    }
+
+    let auth = null;
+    let { subreddit } = post.subreddit_name
+    if (subreddit) {
+      try {
+        auth = await subredditAuth(req, subreddit);
+      } catch (err) {
+        return res.status(401).send({ error: err.message });
+      }
+
+    }
+
+    
     if ((comment.author_id !== req.user.id)
         && (await userIsModerator(req.user.username, comment.subreddit_name) === false)) {
       return res.status(403).send({ error: 'You must be the comment author to delete it' })

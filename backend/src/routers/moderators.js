@@ -2,10 +2,13 @@ const express = require('express')
 const { query } = require('../db')
 const { selectModeratorsStatement, userIsModerator, logAction } = require('../db/utils')
 const auth = require('../middleware/auth')()
+const adminAuth = require('../middleware/admin_auth')()
+const subredditAuth = require('../utils/subreddit_auth')
+
 
 const router = express.Router()
 
-router.get('/', async (req, res) => {
+router.get('/', auth, adminAuth, async (req, res) => {
   try {
     const { username, subreddit } = req.query
     let whereClause = ''
@@ -30,7 +33,7 @@ router.get('/', async (req, res) => {
   }
 })
 
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, adminAuth, async (req, res) => {
   try {
     const { username, subreddit } = req.body
     if (!username) {
@@ -66,7 +69,7 @@ router.post('/', auth, async (req, res) => {
   }
 })
 
-router.delete('/', auth, async (req, res) => {
+router.delete('/', auth, adminAuth, async (req, res) => {
   try {
     const { username, subreddit } = req.body
     if (!username) {

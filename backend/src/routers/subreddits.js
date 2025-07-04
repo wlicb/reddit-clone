@@ -1,22 +1,40 @@
 const express = require('express')
 const { query } = require('../db')
 const auth = require('../middleware/auth')()
+const adminAuth = require('../middleware/admin_auth')()
+const subredditAuth = require('../utils/subreddit_auth')
+
 
 const { logAction } = require('../db/utils')
 
 const router = express.Router()
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const selectSubredditsStatement = `select * from subreddits`
     const { rows } = await query(selectSubredditsStatement)
-    res.send(rows)
+    let results = []
+    for (const row of rows) {
+      let auth = null;
+      let { subreddit } = row.name
+      if (subreddit) {
+        try {
+          auth = await subredditAuth(req, subreddit);
+        } catch (err) {
+          continue
+        }
+
+      }
+      results.push(row)
+    }
+    res.send(results)
   } catch (e) {
+    console.log(e)
     res.status(500).send({ error: e.message })
   }
 })
 
-router.get('/:name', async (req, res) => {
+router.get('/:name', auth, async (req, res) => {
   try {
     const { name } = req.params
     const selectSubredditStatement = `select * from subreddits where name = $1`
@@ -27,6 +45,15 @@ router.get('/:name', async (req, res) => {
     if (!subreddit) {
       res.status(404).send({ error: 'Could not find subreddit with that name' })
     }
+    let auth = null;
+    if (subreddit) {
+      try {
+        auth = await subredditAuth(req, subreddit);
+      } catch (err) {
+        return res.status(401).send({ error: err.message });
+      }
+
+    }
 
     res.send(subreddit)
   } catch (e) {
@@ -34,7 +61,7 @@ router.get('/:name', async (req, res) => {
   }
 })
 
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, adminAuth, async (req, res) => {
   try {
     const { name, description } = req.body
 

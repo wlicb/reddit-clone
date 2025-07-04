@@ -1,10 +1,36 @@
 const express = require('express')
 const { query } = require('../db')
 const auth = require('../middleware/auth')()
+const adminAuth = require('../middleware/admin_auth')()
+const subredditAuth = require('../utils/subreddit_auth')
 
 const { logAction } = require('../db/utils')
 
 const router = express.Router()
+
+const selectPostStatement = `
+  select
+  p.id, p.type, p.title, p.body, p.created_at, p.updated_at,
+  cast(coalesce(sum(pv.vote_value), 0) as int) votes,
+  max(upv.vote_value) has_voted,
+  (select cast(count(*) as int) from comments c where p.id = c.post_id and c.body is not null) number_of_comments,
+  max(u.username) author_name,
+  max(sr.name) subreddit_name
+  from posts p
+  left join users u on p.author_id = u.id
+  inner join subreddits sr on p.subreddit_id = sr.id
+  left join post_votes pv on p.id = pv.post_id
+  left join post_votes upv on p.id = upv.post_id and upv.user_id = $1
+  group by p.id
+`
+
+const selectCommentStatement = `
+  select c.id, c.author_id, c.post_id, c.parent_comment_id, sr.name subreddit_name
+  from comments c
+  inner join posts p on c.post_id = p.id
+  inner join subreddits sr on p.subreddit_id = sr.id
+  where c.id = $1
+`
 
 const checkVoteType = (voteType) => {
   const types = ['post', 'comment']
@@ -35,7 +61,7 @@ const checkVoteValid = async (item_id, vote_value, vote_type) => {
   return { status, error }
 }
 
-router.get('/:voteType', async (req, res) => {
+router.get('/:voteType', auth, adminAuth, async (req, res) => {
   try {
     const { voteType, error } = checkVoteType(req.params.voteType)
     if (error) {
@@ -56,6 +82,30 @@ router.post('/:voteType', auth, async (req, res) => {
       return res.status(400).send({ error: voteTypeError })
     }
     const { item_id, vote_value } = req.body
+
+    console.log(voteType, item_id)
+
+    const user_id = req.user ? req.user.id : -1
+    if (voteType === "comment") {
+      const { rows: [comment] } = await query(selectCommentStatement, [id])
+      const user_id = req.user ? req.user.id : -1
+      const post_id = comment.post_id
+      const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
+      if (!post) {
+        return res.status(404).send({ error: 'Could not find post with that id' })
+      }
+
+      let auth = null;
+      let { subreddit } = post.subreddit_name
+      if (subreddit) {
+        try {
+          auth = await subredditAuth(req, subreddit);
+        } catch (err) {
+          return res.status(401).send({ error: err.message });
+        }
+
+      }
+    }
 
     const { status, error } = await checkVoteValid(item_id, vote_value, voteType)
     if (error) {

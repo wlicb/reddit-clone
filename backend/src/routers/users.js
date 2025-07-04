@@ -4,6 +4,9 @@ const jwt = require('jsonwebtoken')
 const { query } = require('../db')
 const { updateTableRow, logAction } = require('../db/utils')
 const auth = require('../middleware/auth')()
+const adminAuth = require('../middleware/admin_auth')()
+const subredditAuth = require('../utils/subreddit_auth')
+
 
 
 const router = express.Router()
@@ -27,7 +30,7 @@ const addToken = async (userid) => {
   return { user, token }
 }
 
-router.get('/', async (req, res) => {
+router.get('/', auth, adminAuth, async (req, res) => {
   try {
     const { rows } = await query('select * from users')
     res.send(rows.map((user) => getPublicUser(user)))
@@ -36,7 +39,7 @@ router.get('/', async (req, res) => {
   }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, adminAuth, async (req, res) => {
   try {
     const { id } = req.params
 
@@ -53,7 +56,7 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', auth, adminAuth, async (req, res) => {
   try {
     const { username, password, isAdmin, isBot, selectedSubreddit, registeredBy } = req.body
     console.log(req.body)
@@ -151,7 +154,7 @@ router.post('/logout', auth, async (req, res) => {
   res.send(user)
 })
 
-router.post('/logoutAll', auth, async (req, res) => {
+router.post('/logoutAll', auth, adminAuth, async (req, res) => {
   const clearUserTokensStatement = `
     update users
     set tokens = '{}'
@@ -163,7 +166,7 @@ router.post('/logoutAll', auth, async (req, res) => {
   res.send(user)
 })
 
-router.put('/', auth, async (req, res) => {
+router.put('/', auth, adminAuth, async (req, res) => {
   try {
     const allowedUpdates = ['username', 'password']
     if (req.body.username !== undefined) {
@@ -186,7 +189,7 @@ router.put('/', auth, async (req, res) => {
   }
 })
 
-router.delete('/', auth, async (req, res) => {
+router.delete('/', auth, adminAuth, async (req, res) => {
   try {
     const deleteUserStatement = `delete from users where id = $1 returning *`
 

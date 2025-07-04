@@ -3,6 +3,9 @@ const { query } = require('../db')
 const { updateTableRow, logAction } = require('../db/utils')
 const auth = require('../middleware/auth')()
 const optionalAuth = require('../middleware/auth')(true)
+const adminAuth = require('../middleware/admin_auth')()
+const subredditAuth = require('../utils/subreddit_auth')
+
 
 const router = express.Router()
 
@@ -22,27 +25,42 @@ const selectPostStatement = `
   group by p.id
 `
 
-router.get('/', optionalAuth, async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
-    const allowedFilters = ['subreddit', 'author']
+    const allowedFilters = ['subreddit']
     const columnNamesEnum = {
-      'subreddit': 'max(sr.name)',
-      'author': 'max(u.username)'
+      'subreddit': 'max(sr.name)'
     }
     const validFilters = Object.keys(req.query).every((key) => allowedFilters.includes(key))
     if (!validFilters) {
       return res.status(400).send({ error: `The only allowed filters are ${allowedFilters.join(', ')}`})
     } 
 
+    let auth = null;
+    let { subreddit } = req.query
+    if (subreddit) {
+      try {
+        auth = await subredditAuth(req, subreddit);
+      } catch (err) {
+        return res.status(401).send({ error: err.message });
+      }
+
+    }
+
+    if (!subreddit) {
+      subreddit = req.user.selectedsubreddit
+    }
+    console.log(subreddit)
+
+
     const user_id = req.user ? req.user.id : -1
     const queryArgs = [user_id]
     
     const havingAndClause = []
-    Object.entries(req.query).forEach(([filterName, filterValue]) => {
-      queryArgs.push(filterValue)
-      havingAndClause.push(`${columnNamesEnum[filterName]} = $${queryArgs.length}`)
-    })
-    
+
+    queryArgs.push(subreddit)
+    havingAndClause.push(`${columnNamesEnum['subreddit']} = $${queryArgs.length}`)
+
     const selectFilteredPostsStatement = `
       ${selectPostStatement}
       having p.title is not null
@@ -53,15 +71,26 @@ router.get('/', optionalAuth, async (req, res) => {
     const { rows } = await query(selectFilteredPostsStatement, queryArgs)
     res.send(rows)
   } catch (e) {
+    // console.log(e)
     res.status(500).send({ error: e.message })
   }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, adminAuth, async (req, res) => {
   try {
     const { id } = req.params
     const user_id = req.user ? req.user.id : -1
     const { rows: [post] } = await query(`${selectPostStatement} having p.id = $2`, [user_id, id])
+
+    // let auth = null;
+    // const { subreddit } = post.subreddit
+    // try {
+    //   auth = await subredditAuth(req, subreddit);
+    // } catch (err) {
+    //   return res.status(401).send({ error: err.message });
+    // }
+    console.log(post)
+
     if (!post) {
       return res.status(404).send({ error: 'Could not find post with that id' })
     }
@@ -72,7 +101,7 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, adminAuth, async (req, res) => {
   try {
     const { type, title, body, subreddit } = req.body
     if (!type) {
@@ -123,7 +152,7 @@ router.post('/', auth, async (req, res) => {
   }
 })
 
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, adminAuth, async (req, res) => {
   try {
     const { id } = req.params
     const selectPostStatement = `select * from posts where id = $1`
@@ -157,7 +186,7 @@ router.put('/:id', auth, async (req, res) => {
   }
 })
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, adminAuth, async (req, res) => {
   try {
     const { id } = req.params
     const selectPostStatement = `select * from posts where id = $1`
