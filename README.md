@@ -78,7 +78,7 @@ npm run db-migrate-dev
 
 Go to backend/scripts/insert_admin.js, change admin username and password.
 
-Then run ```env-cmd -f ./config/dev.env node src/db/prepare-test-data.js```
+Then run ```env-cmd -f ./config/dev.env node scripts/insert_admin.js```
 
 ## Usage
 1. Start server
