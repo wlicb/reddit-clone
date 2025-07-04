@@ -50,7 +50,7 @@ router.get('/', auth, async (req, res) => {
     if (!subreddit) {
       subreddit = req.user.selectedsubreddit
     }
-    console.log(subreddit)
+    // console.log(subreddit)
 
 
     const user_id = req.user ? req.user.id : -1
@@ -89,7 +89,7 @@ router.get('/:id', auth, adminAuth, async (req, res) => {
     // } catch (err) {
     //   return res.status(401).send({ error: err.message });
     // }
-    console.log(post)
+    // console.log(post)
 
     if (!post) {
       return res.status(404).send({ error: 'Could not find post with that id' })

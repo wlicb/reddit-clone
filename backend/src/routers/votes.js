@@ -114,7 +114,7 @@ router.post('/:voteType', auth, async (req, res) => {
 
       let auth = null;
       let subreddit = post.subreddit_name
-      console.log(post)
+      // console.log(post)
       if (subreddit) {
         try {
           auth = await subredditAuth(req, subreddit);

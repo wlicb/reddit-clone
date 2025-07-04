@@ -59,7 +59,7 @@ router.get('/:id', auth, adminAuth, async (req, res) => {
 router.post('/', auth, adminAuth, async (req, res) => {
   try {
     const { username, password, isAdmin, isBot, selectedSubreddit, registeredBy } = req.body
-    console.log(req.body)
+    // console.log(req.body)
     if (!username) {
       throw new Error('Username is required')
     }
@@ -72,7 +72,7 @@ router.post('/', auth, adminAuth, async (req, res) => {
     if (!isBot) {
       throw new Error('Bot info is required')
     }
-    console.log(registeredBy)
+    // console.log(registeredBy)
     if (isAdmin == "false" && !selectedSubreddit) {
       throw new Error('Selected Subreddit is required for non-admin users')
     }
@@ -125,7 +125,7 @@ router.post('/login', async (req, res) => {
     }
 
     const { user, token } = await addToken(rows[0].id)
-    console.log(user.id)
+    // console.log(user.id)
 
     await logAction({ userId: user.id, action: 'login', metadata: { token: token } });
 
