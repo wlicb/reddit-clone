@@ -42,8 +42,10 @@ const Navbar = ({
   const subredditName = location.pathname.match(/r\/[^\/]+/);
 
   useEffect(() => {
-    getSubreddits();
-  }, []);
+    if (user) {
+      getSubreddits();
+    }
+  }, [user]);
 
   return (
     <ThemedBox
@@ -86,7 +88,7 @@ const Navbar = ({
               {error && (
                 <Alert status="error">
                   <AlertIcon />
-                  Error fetching subreddits
+                  {String(error)}
                 </Alert>
               )}
               {isLoading && (

@@ -31,7 +31,7 @@ class LoginPage extends React.Component {
     const { error } = this.props;
     if (!error) {
       history.push(
-        (location && location.state && location.state.prevPathname) || '/'
+        '/'
       );
     }
   };
