@@ -195,8 +195,8 @@ router.delete('/:id', auth, adminAuth, async (req, res) => {
     if (!post) {
       return res.status(404).send({ error: 'Could not find post with that id' })
     }
-    if (post.author_id !== req.user.id) {
-      return res.status(401).send({ error: 'You must be the post creator to delete it' })
+    if (req.user.isadmin !== "true") {
+      return res.status(401).send({ error: 'You must be admin to delete it' })
     }
 
     // const deletePostStatement = `delete from posts where id = $1 returning *`

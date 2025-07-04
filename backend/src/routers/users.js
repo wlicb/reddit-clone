@@ -135,7 +135,7 @@ router.post('/login', async (req, res) => {
     })
 
   } catch (e) {
-    console.log(e)
+    // console.log(e)
     res.status(400).send({ error: e.message })
   }
 })
@@ -166,42 +166,42 @@ router.post('/logoutAll', auth, adminAuth, async (req, res) => {
   res.send(user)
 })
 
-router.put('/', auth, adminAuth, async (req, res) => {
-  try {
-    const allowedUpdates = ['username', 'password']
-    if (req.body.username !== undefined) {
-      const { rows } = await query(`select * from users where username = $1`, [
-        req.body.username
-      ])
-      if (rows.length > 0) {
-        return res.status(409).send({ error: 'Username is already taken' })
-      }
-    }
-    if (req.body.password !== undefined) {
-      req.body.password = await bcrypt.hash(req.body.password, 10)
-    }
-    const user = await updateTableRow('users', req.user.id, allowedUpdates, req.body)
-    // await logAction({ userId: registeredBy, action: 'edit_user', targetId: user.id, targetType: "user", metadata: { username: username, password: password } });
+// router.put('/', auth, adminAuth, async (req, res) => {
+//   try {
+//     const allowedUpdates = ['username', 'password']
+//     if (req.body.username !== undefined) {
+//       const { rows } = await query(`select * from users where username = $1`, [
+//         req.body.username
+//       ])
+//       if (rows.length > 0) {
+//         return res.status(409).send({ error: 'Username is already taken' })
+//       }
+//     }
+//     if (req.body.password !== undefined) {
+//       req.body.password = await bcrypt.hash(req.body.password, 10)
+//     }
+//     const user = await updateTableRow('users', req.user.id, allowedUpdates, req.body)
+//     // await logAction({ userId: registeredBy, action: 'edit_user', targetId: user.id, targetType: "user", metadata: { username: username, password: password } });
 
-    res.send(getPublicUser(user))
-  } catch (e) {
-    res.status(400).send({ error: e.message })
-  }
-})
+//     res.send(getPublicUser(user))
+//   } catch (e) {
+//     res.status(400).send({ error: e.message })
+//   }
+// })
 
-router.delete('/', auth, adminAuth, async (req, res) => {
-  try {
-    const deleteUserStatement = `delete from users where id = $1 returning *`
+// router.delete('/', auth, adminAuth, async (req, res) => {
+//   try {
+//     const deleteUserStatement = `delete from users where id = $1 returning *`
 
-    const { rows: [user] } = await query(deleteUserStatement, [req.user.id])
+//     const { rows: [user] } = await query(deleteUserStatement, [req.user.id])
 
-    if (!user) {
-      return res.status(404).send({ error: 'Could not find user with that id' })
-    }
-    res.send(getPublicUser(user))
-  } catch (e) {
-    res.status(400).send({ error: e.message })
-  }
-})
+//     if (!user) {
+//       return res.status(404).send({ error: 'Could not find user with that id' })
+//     }
+//     res.send(getPublicUser(user))
+//   } catch (e) {
+//     res.status(400).send({ error: e.message })
+//   }
+// })
 
 module.exports = router

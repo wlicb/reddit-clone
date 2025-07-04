@@ -10,18 +10,18 @@ const router = express.Router()
 
 const selectPostStatement = `
   select
-  p.id, p.type, p.title, p.body, p.created_at, p.updated_at,
-  cast(coalesce(sum(pv.vote_value), 0) as int) votes,
-  max(upv.vote_value) has_voted,
-  (select cast(count(*) as int) from comments c where p.id = c.post_id and c.body is not null) number_of_comments,
-  max(u.username) author_name,
-  max(sr.name) subreddit_name
+    p.id, p.type, p.title, p.body, p.created_at, p.updated_at,
+    max(u.username) author_name,
+    cast(coalesce(sum(pv.vote_value), 0) as int) votes,
+    max(upv.vote_value) has_voted,
+    max(sr.name) subreddit_name
   from posts p
   left join users u on p.author_id = u.id
   inner join subreddits sr on p.subreddit_id = sr.id
   left join post_votes pv on p.id = pv.post_id
-  left join post_votes upv on p.id = upv.post_id and upv.user_id = $1
+  left join post_votes upv on upv.post_id = p.id and upv.user_id = $1
   group by p.id
+  having p.id = $2
 `
 
 const selectCommentStatement = `
@@ -83,12 +83,12 @@ router.post('/:voteType', auth, async (req, res) => {
     }
     const { item_id, vote_value } = req.body
 
-    console.log(voteType, item_id)
+    // console.log(voteType, item_id)
 
     const user_id = req.user ? req.user.id : -1
+    // console.log(req.user.selectedsubreddit)
     if (voteType === "comment") {
-      const { rows: [comment] } = await query(selectCommentStatement, [id])
-      const user_id = req.user ? req.user.id : -1
+      const { rows: [comment] } = await query(selectCommentStatement, [item_id])
       const post_id = comment.post_id
       const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
       if (!post) {
@@ -96,7 +96,25 @@ router.post('/:voteType', auth, async (req, res) => {
       }
 
       let auth = null;
-      let { subreddit } = post.subreddit_name
+      let subreddit = post.subreddit_name
+      // console.log(post)
+      if (subreddit) {
+        try {
+          auth = await subredditAuth(req, subreddit);
+        } catch (err) {
+          return res.status(401).send({ error: err.message });
+        }
+
+      }
+    } else {
+      const { rows: [post] } = await query(selectPostStatement, [user_id, item_id])
+      if (!post) {
+        return res.status(404).send({ error: 'Could not find post with that id' })
+      }
+
+      let auth = null;
+      let subreddit = post.subreddit_name
+      console.log(post)
       if (subreddit) {
         try {
           auth = await subredditAuth(req, subreddit);
@@ -142,6 +160,7 @@ router.post('/:voteType', auth, async (req, res) => {
 
     res.status(201).send(item_vote)
   } catch (e) {
+    console.log(e)
     res.status(500).send({ error: e.message })
   }
 })

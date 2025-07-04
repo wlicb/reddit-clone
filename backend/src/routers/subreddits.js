@@ -16,7 +16,7 @@ router.get('/', auth, async (req, res) => {
     let results = []
     for (const row of rows) {
       let auth = null;
-      let { subreddit } = row.name
+      let subreddit = row.name
       if (subreddit) {
         try {
           auth = await subredditAuth(req, subreddit);
@@ -48,7 +48,7 @@ router.get('/:name', auth, async (req, res) => {
     let auth = null;
     if (subreddit) {
       try {
-        auth = await subredditAuth(req, subreddit);
+        auth = await subredditAuth(req, subreddit.name);
       } catch (err) {
         return res.status(401).send({ error: err.message });
       }

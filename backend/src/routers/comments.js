@@ -75,7 +75,7 @@ router.get('/:post_id', auth, async (req, res) => {
     }
 
     let auth = null;
-    let { subreddit } = post.subreddit_name
+    let subreddit = post.subreddit_name
     if (subreddit) {
       try {
         auth = await subredditAuth(req, subreddit);
@@ -108,7 +108,7 @@ router.post('/', auth, async (req, res) => {
     }
 
     let auth = null;
-    let { subreddit } = post.subreddit_name
+    let subreddit = post.subreddit_name
     if (subreddit) {
       try {
         auth = await subredditAuth(req, subreddit);
@@ -166,7 +166,7 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     let auth = null;
-    let { subreddit } = post.subreddit_name
+    let subreddit = post.subreddit_name
     if (subreddit) {
       try {
         auth = await subredditAuth(req, subreddit);
@@ -209,7 +209,7 @@ router.delete('/:id', auth, async (req, res) => {
     }
 
     let auth = null;
-    let { subreddit } = post.subreddit_name
+    let subreddit = post.subreddit_name
     if (subreddit) {
       try {
         auth = await subredditAuth(req, subreddit);
@@ -219,8 +219,8 @@ router.delete('/:id', auth, async (req, res) => {
 
     }
 
-    
-    if ((comment.author_id !== req.user.id)
+
+    if ((comment.author_id !== req.user.id && req.user.isadmin !== "true")
         && (await userIsModerator(req.user.username, comment.subreddit_name) === false)) {
       return res.status(403).send({ error: 'You must be the comment author to delete it' })
     }
