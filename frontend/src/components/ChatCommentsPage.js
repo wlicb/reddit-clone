@@ -19,7 +19,7 @@ import {
 } from '@chakra-ui/react';
 import Post from './Post';
 import ChatFlattenedComments from './ChatFlattenedComments';
-import WriteCommentBox from './WriteCommentBox';
+import WriteCommentBoxWithMentions from './WriteCommentBoxWithMentions';
 import LoginButton from './LoginButton';
 import {
   createLoadingAndErrorSelector,
@@ -168,6 +168,7 @@ const ChatCommentsPage = ({
         <ChatFlattenedComments 
           ref={chatCommentsRef}
           comments={rootComments} 
+          subredditName={subreddit_name}
         />
       </Box>
 
@@ -190,9 +191,10 @@ const ChatCommentsPage = ({
               <Text fontSize="sm" color="gray.500" mb={2}>
                 Reply as {user.username}
               </Text>
-              <WriteCommentBox 
+              <WriteCommentBoxWithMentions 
                 postId={post_id} 
                 parentCommentId={null} 
+                subredditName={subreddit_name}
               />
             </Box>
           </Flex>

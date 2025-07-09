@@ -105,4 +105,41 @@ router.post('/', auth, adminAuth, async (req, res) => {
   }
 })
 
+router.get('/:name/users', auth, async (req, res) => {
+  try {
+    const { name } = req.params
+    
+    // First verify the subreddit exists
+    const selectSubredditStatement = `select * from subreddits where name = $1`
+    const {
+      rows: [subreddit],
+    } = await query(selectSubredditStatement, [name])
+
+    if (!subreddit) {
+      return res.status(404).send({ error: 'Could not find subreddit with that name' })
+    }
+
+    // Check if user has access to this subreddit
+    try {
+      await subredditAuth(req, subreddit.name);
+    } catch (err) {
+      return res.status(401).send({ error: err.message });
+    }
+
+    // Get only user IDs and usernames for users with selectedsubreddit === this subreddit's name and all admin users, excluding current user
+    const selectUsersStatement = `
+      SELECT id, username FROM users 
+      WHERE (selectedsubreddit = $1 OR isadmin = 'true') AND id != $2
+      ORDER BY username
+    `
+    
+    const { rows: users } = await query(selectUsersStatement, [name, req.user.id])
+    
+    res.send(users)
+  } catch (e) {
+    console.log(e)
+    res.status(500).send({ error: e.message })
+  }
+})
+
 module.exports = router

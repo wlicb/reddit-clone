@@ -2,7 +2,7 @@ import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { Box, Text, Flex, Badge } from '@chakra-ui/react';
 import ChatComment from './ChatComment';
 
-const ChatFlattenedComments = forwardRef(({ comments }, ref) => {
+const ChatFlattenedComments = forwardRef(({ comments, subredditName }, ref) => {
   // First, create a map of all comments for easy lookup
   const createCommentMap = (commentList) => {
     const commentMap = new Map();
@@ -187,6 +187,7 @@ const ChatFlattenedComments = forwardRef(({ comments }, ref) => {
               hasVoted={comment.has_voted}
               parentComment={comment.parentComment}
               onHighlightComment={highlightComment}
+              subredditName={subredditName}
             />
         </Box>
       ))}

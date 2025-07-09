@@ -17,7 +17,7 @@ import {
 import { ChatIcon, EditIcon, ArrowBackIcon } from '@chakra-ui/icons';
 import ThemedBox from './ThemedBox';
 import UpvoteBar from './UpvoteBar';
-import WriteCommentBox from './WriteCommentBox';
+import WriteCommentBoxWithMentions from './WriteCommentBoxWithMentions';
 import EditBox from './EditBox';
 import DeleteButton from './DeleteButton';
 import ChakraMarkdown from './ChakraMarkdown';
@@ -34,6 +34,7 @@ const ChatComment = ({
   user,
   parentComment,
   onHighlightComment,
+  subredditName,
 }) => {
   const { colorMode } = useColorMode();
   const [showWriteReply, setShowWriteReply] = useState(false);
@@ -237,11 +238,12 @@ const ChatComment = ({
                   Replying to {author}
                 </Text>
               </Box>
-              <WriteCommentBox
+              <WriteCommentBoxWithMentions
                 type="reply"
                 postId={postId}
                 parentCommentId={id}
                 onClose={() => setShowWriteReply(false)}
+                subredditName={subredditName}
               />
             </Box>
           )}
