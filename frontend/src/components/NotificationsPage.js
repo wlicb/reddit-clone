@@ -23,6 +23,7 @@ const NotificationsPage = () => {
   const { notifications, loading, error } = useSelector(state => state.notifications);
   const { user } = useSelector(state => state.auth);
   const [navigating, setNavigating] = useState(null);
+  const [isMounted, setIsMounted] = useState(true);
 
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const unreadBg = useColorModeValue('blue.50', 'blue.900');
@@ -30,9 +31,14 @@ const NotificationsPage = () => {
   const hoverBg = useColorModeValue('blue.100', 'blue.800');
 
   useEffect(() => {
+    setIsMounted(true);
     if (user) {
       dispatch(fetchNotifications());
     }
+    
+    return () => {
+      setIsMounted(false);
+    };
   }, [dispatch, user]);
 
   const formatTime = (timestamp) => {
@@ -57,22 +63,35 @@ const NotificationsPage = () => {
   };
 
   const handleNotificationClick = async (notification) => {
+    if (!isMounted) return;
+    
     setNavigating(notification.id);
     try {
       // Mark as read
       if (!notification.read) {
         await dispatch(markNotificationAsRead(notification.id));
       }
+      
+      // Check if component is still mounted before continuing
+      if (!isMounted) return;
+      
       // Navigate to the post's comment page and scroll to the comment
       let postId = notification.post_id;
       if (!postId) {
         console.log("Cannot find post id for notification: " + notification)
+        return;
       }
       const post = await dispatch(getPost(postId));
-      console.log(post)
+      
+      // Check if component is still mounted before navigating
+      if (!isMounted) return;
+      
       history.push(`/r/${post.subreddit_name}/comments/${postId}#comment-${notification.comment_id}`);
+      // No localStorage usage needed
     } finally {
-      setNavigating(null);
+      if (isMounted) {
+        setNavigating(null);
+      }
     }
   };
 

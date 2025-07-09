@@ -82,6 +82,18 @@ const ChatCommentsPage = ({
     }
   }, [newCommentId, clearNewCommentId]);
 
+  // Handle notification-based scrolling and highlighting using URL hash
+  useEffect(() => {
+    if (window.location.hash && window.location.hash.startsWith('#comment-')) {
+      const commentId = parseInt(window.location.hash.replace('#comment-', ''));
+      if (commentId && chatCommentsRef.current && chatCommentsRef.current.scrollToNewComment) {
+        setTimeout(() => {
+          chatCommentsRef.current.scrollToNewComment(commentId);
+        }, 200);
+      }
+    }
+  }, [comments]); // Re-run when comments change to ensure they're loaded
+
   if (isLoading) {
     return (
       <Flex m={10} justifyContent="center" alignItems="center">
