@@ -63,12 +63,7 @@ const MentionAutocomplete = ({
           prev === -1 ? filteredUsers.length - 1 : (prev - 1 + filteredUsers.length) % filteredUsers.length
         );
         break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && filteredUsers[selectedIndex]) {
-          onMentionSelect(filteredUsers[selectedIndex]);
-        }
-        break;
+
       case 'Escape':
         e.preventDefault();
         onClose();

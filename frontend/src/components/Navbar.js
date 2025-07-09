@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -16,8 +16,10 @@ import {
   Alert,
   AlertIcon,
   CircularProgress,
+  Badge,
+  IconButton,
 } from '@chakra-ui/react';
-import { ChevronDownIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon, BellIcon } from '@chakra-ui/icons';
 import { ColorModeSwitcher } from '../ColorModeSwitcher';
 import ThemedBox from './ThemedBox';
 import {
@@ -27,6 +29,7 @@ import {
 } from '../selectors';
 import { startLogout } from '../actions/auth';
 import { getSubreddits } from '../actions/subreddits';
+import { getUnreadCount } from '../actions/notifications';
 import RegisterButton from './RegisterButton';
 import LoginButton from './LoginButton';
 
@@ -37,15 +40,27 @@ const Navbar = ({
   error,
   startLogout,
   getSubreddits,
+  getUnreadCount,
 }) => {
   const location = useLocation();
   const subredditName = location.pathname.match(/r\/[^\/]+/);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (user) {
       getSubreddits();
+      // Fetch unread count
+      const fetchUnreadCount = async () => {
+        const count = await getUnreadCount();
+        setUnreadCount(count);
+      };
+      fetchUnreadCount();
+      
+      // Set up interval to check for new notifications
+      const interval = setInterval(fetchUnreadCount, 30000); // Check every 30 seconds
+      return () => clearInterval(interval);
     }
-  }, [user]);
+  }, [user, getUnreadCount]);
 
   return (
     <ThemedBox
@@ -109,6 +124,33 @@ const Navbar = ({
 
       {user ? (
         <HStack>
+          <IconButton
+            as={Link}
+            to="/notifications"
+            aria-label="Notifications"
+            icon={<BellIcon />}
+            variant="ghost"
+            position="relative"
+          >
+            {unreadCount > 0 && (
+              <Badge
+                colorScheme="red"
+                variant="solid"
+                position="absolute"
+                top="-1"
+                right="-1"
+                borderRadius="full"
+                fontSize="xs"
+                minW="20px"
+                h="20px"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Badge>
+            )}
+          </IconButton>
           <Menu>
             <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
               {user.username}
@@ -116,6 +158,9 @@ const Navbar = ({
             <MenuList>
               <MenuItem display={['block', 'none']} as={Link} to="/submit">
                 Submit post
+              </MenuItem>
+              <MenuItem as={Link} to="/notifications">
+                Notifications
               </MenuItem>
               {(user.isadmin === "true") && (<MenuItem as={Link} to="/subreddits/create">
                 Create subreddit
@@ -156,6 +201,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   startLogout: () => dispatch(startLogout()),
   getSubreddits: () => dispatch(getSubreddits()),
+  getUnreadCount: () => dispatch(getUnreadCount()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Navbar);

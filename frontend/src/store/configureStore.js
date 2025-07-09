@@ -6,6 +6,7 @@ import errorReducer from '../reducers/error';
 import postReducer from '../reducers/post';
 import postListReducer from '../reducers/postList';
 import commentsReducer from '../reducers/comments';
+import notificationsReducer from '../reducers/notifications';
 import { saveState } from '../localStorage';
 import subredditsReducer from '../reducers/subreddits';
 
@@ -22,6 +23,7 @@ const configureStore = () => {
     post: postReducer,
     postList: postListReducer,
     comments: commentsReducer,
+    notifications: notificationsReducer,
     subreddits: subredditsReducer,
   });
 

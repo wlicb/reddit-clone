@@ -16,6 +16,24 @@ export const deletePost = (id) => ({
   id,
 });
 
+export const getPost = (postId) => async (dispatch) => {
+  try {
+    dispatch({ type: 'GET_POST_REQUEST' });
+    const response = await axios.get(`/posts/${postId}`);
+    dispatch({ 
+      type: 'GET_POST_SUCCESS', 
+      payload: response.data 
+    });
+    return response.data;
+  } catch (error) {
+    dispatch({
+      type: 'GET_POST_FAILURE',
+      payload: error.response?.data?.error || 'Failed to fetch post'
+    });
+    throw error;
+  }
+};
+
 export const submitPost = (postDetails) => async (dispatch) => {
   const { type, title, body, subreddit } = postDetails;
   try {

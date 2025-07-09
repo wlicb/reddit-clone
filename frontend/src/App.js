@@ -10,6 +10,7 @@ import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import CreatePostPage from './components/CreatePostPage';
 import DiscussionPostList from './components/DiscussionPostList';
+import NotificationsPage from './components/NotificationsPage';
 import ThemedBox from './components/ThemedBox';
 import CreateSubredditPage from './components/CreateSubredditPage';
 
@@ -44,6 +45,9 @@ function App() {
                 <PrivateRoute path="/subreddits/create"
                   check={(u) => u.isadmin === 'true'}>
                   <CreateSubredditPage />
+                </PrivateRoute>
+                <PrivateRoute path="/notifications">
+                  <NotificationsPage />
                 </PrivateRoute>
                 <PrivateRoute path="/r/:subreddit"
                   check={(u) => {

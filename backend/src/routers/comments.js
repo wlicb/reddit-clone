@@ -130,6 +130,57 @@ router.post('/', auth, async (req, res) => {
       parent_comment_id
     ])
 
+    // Record mentions and create notifications
+    const mentionUsernames = (body.match(/@([a-zA-Z0-9_]+)/g) || []).map(m => m.slice(1));
+    if (mentionUsernames.length > 0) {
+      // Look up user IDs for mentioned usernames
+      const { rows: mentionedUsers } = await query(
+        `SELECT id, username FROM users WHERE username = ANY($1)`,
+        [mentionUsernames]
+      );
+      for (const user of mentionedUsers) {
+        // Don't notify the comment author about their own mentions
+        if (user.id !== req.user.id) {
+          await query(
+            `INSERT INTO comment_mentions (comment_id, mentioned_user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+            [id, user.id]
+          );
+          
+          // Create mention notification
+          await query(
+            `INSERT INTO notifications (user_id, type, comment_id, post_id, created_at) 
+             VALUES ($1, $2, $3, $4,NOW())`,
+            [
+              user.id,
+              'mention',
+              id,
+              post_id
+            ]
+          );
+        }
+      }
+    }
+
+    // Create reply notification if this is a reply to another comment
+    if (parent_comment_id) {
+      const { rows: [parentComment] } = await query(
+        `SELECT author_id FROM comments WHERE id = $1`,
+        [parent_comment_id]
+      );
+      
+      if (parentComment && parentComment.author_id !== req.user.id) {
+        await query(
+          `INSERT INTO notifications (user_id, type, comment_id, post_id, created_at) 
+           VALUES ($1, $2, $3, $4, NOW())`,
+          [
+            parentComment.author_id,
+            'reply',
+            id,
+            post_id
+          ]
+        );
+      }
+    }
 
     // Automatically upvote own comment
     const createVoteStatement = `insert into comment_votes values ($1, $2, $3)`

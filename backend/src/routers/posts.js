@@ -76,20 +76,20 @@ router.get('/', auth, async (req, res) => {
   }
 })
 
-router.get('/:id', auth, adminAuth, async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params
     const user_id = req.user ? req.user.id : -1
     const { rows: [post] } = await query(`${selectPostStatement} having p.id = $2`, [user_id, id])
 
-    // let auth = null;
-    // const { subreddit } = post.subreddit
-    // try {
-    //   auth = await subredditAuth(req, subreddit);
-    // } catch (err) {
-    //   return res.status(401).send({ error: err.message });
-    // }
-    // console.log(post)
+    let auth = null;
+    const subreddit = post.subreddit_name
+    try {
+      auth = await subredditAuth(req, subreddit);
+    } catch (err) {
+      return res.status(401).send({ error: err.message });
+    }
+    console.log(post)
 
     if (!post) {
       return res.status(404).send({ error: 'Could not find post with that id' })
@@ -97,6 +97,7 @@ router.get('/:id', auth, adminAuth, async (req, res) => {
 
     res.send(post)
   } catch (e) {
+    console.log(e)
     res.status(500).send({ error: e.message })
   }
 })
