@@ -1,5 +1,5 @@
-import PostList from './PostList';
+import DiscussionPostList from './DiscussionPostList';
 
-const HomePage = () => <PostList />;
+const HomePage = () => <DiscussionPostList />;
 
 export default HomePage;

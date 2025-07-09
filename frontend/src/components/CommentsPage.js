@@ -11,7 +11,7 @@ import {
   CircularProgress,
 } from '@chakra-ui/react';
 import Post from './Post';
-import CommentsThread from './CommentsThread';
+import FlattenedComments from './FlattenedComments';
 import WriteCommentBox from './WriteCommentBox';
 import LoginButton from './LoginButton';
 import {
@@ -127,7 +127,7 @@ const CommentsPage = ({
         </Flex>
       )}
       <br />
-      <CommentsThread comments={rootComments} />
+      <FlattenedComments comments={rootComments} />
     </Box>
   );
 };

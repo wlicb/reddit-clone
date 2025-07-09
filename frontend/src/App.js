@@ -5,11 +5,11 @@ import theme from './theme';
 import PublicRoute from './components/PublicRoute';
 import PrivateRoute from './components/PrivateRoute';
 import Navbar from './components/Navbar';
-import CommentsPage from './components/CommentsPage';
+import ChatCommentsPage from './components/ChatCommentsPage';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import CreatePostPage from './components/CreatePostPage';
-import PostList from './components/PostList';
+import DiscussionPostList from './components/DiscussionPostList';
 import ThemedBox from './components/ThemedBox';
 import CreateSubredditPage from './components/CreateSubredditPage';
 
@@ -28,7 +28,7 @@ function App() {
                     const match = path.match(/^\/r\/([^/]+)/);
                     return (match && u.selectedsubreddit === match[1]) || u.isadmin === 'true';
                   }}>
-                  <CommentsPage />
+                  <ChatCommentsPage />
                 </PrivateRoute>
                 <PublicRoute path="/login" >
                   <LoginPage />
@@ -51,10 +51,10 @@ function App() {
                     const match = path.match(/^\/r\/([^/]+)/);
                     return (match && u.selectedsubreddit === match[1]) || u.isadmin === 'true';
                   }}>
-                  <PostList />
+                  <DiscussionPostList />
                 </PrivateRoute>
                 <Route path="/">
-                  <PostList />
+                  <DiscussionPostList />
                 </Route>
               </Switch>
             </Box>

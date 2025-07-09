@@ -17,6 +17,10 @@ export const deleteComment = (id) => ({
   id,
 });
 
+export const clearNewCommentId = () => ({
+  type: 'CLEAR_NEW_COMMENT_ID',
+});
+
 export const submitComment = (commentDetails) => async (dispatch, getState) => {
   try {
     const { body, post_id, parent_comment_id } = commentDetails;
@@ -26,14 +30,14 @@ export const submitComment = (commentDetails) => async (dispatch, getState) => {
       post_id,
       parent_comment_id,
     });
-    const comments = commentsSelector(getState());
-    dispatch(setComments([response.data].concat(comments)));
-    dispatch({ type: 'SUBMIT_COMMENT_SUCCESS' });
+    dispatch({ type: 'SUBMIT_COMMENT_SUCCESS', newCommentId: response.data.id, newComment: response.data });
+    return { payload: response.data };
   } catch (e) {
     dispatch({
       type: 'SUBMIT_COMMENT_FAILURE',
       message: e.message,
       response: e.response,
     });
+    throw e;
   }
 };

@@ -25,18 +25,21 @@ class WriteCommentBox extends React.Component {
     e.preventDefault();
     const { body } = this.state;
     const { postId, parentCommentId, submitComment, onClose } = this.props;
-    await submitComment({
-      body,
-      post_id: postId,
-      parent_comment_id: parentCommentId,
-    });
-    const { error } = this.props;
-    this.setState({ body: '' });
-    if (error) {
+    
+    try {
+      await submitComment({
+        body,
+        post_id: postId,
+        parent_comment_id: parentCommentId,
+      });
+      
+      this.setState({ body: '' });
+      
+      if (onClose) {
+        onClose();
+      }
+    } catch (error) {
       this.setState({ hasError: true });
-    }
-    if (!error && onClose) {
-      onClose();
     }
   };
 
