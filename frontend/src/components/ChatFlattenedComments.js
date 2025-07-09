@@ -74,6 +74,19 @@ const ChatFlattenedComments = forwardRef(({ comments }, ref) => {
   const highlightedCommentRef = useRef(null);
   const highlightTimeoutRef = useRef(null);
 
+  // Update highlight color on color mode change
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      if (highlightedCommentRef.current) {
+        const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+        const highlightColor = isDarkMode ? '#22304a' : '#e3f2fd';
+        highlightedCommentRef.current.style.setProperty('background-color', highlightColor, 'important');
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+
   // Function to scroll to a specific comment
   const scrollToComment = (commentId) => {
     // Find the comment element using data-comment-id attribute

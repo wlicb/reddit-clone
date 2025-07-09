@@ -61,14 +61,14 @@ const ChatComment = ({
             <Box 
               mb={2} 
               p={2} 
-              bg="gray.50" 
+              bg={colorMode === 'dark' ? 'gray.700' : 'gray.50'}
               borderRadius="md" 
               borderLeft="3px solid"
-              borderColor="blue.400"
+              borderColor={colorMode === 'dark' ? 'blue.300' : 'blue.400'}
               fontSize="xs"
-              color="gray.600"
+              color={colorMode === 'dark' ? 'gray.200' : 'gray.600'}
               cursor="pointer"
-              _hover={{ bg: "gray.100" }}
+              _hover={{ bg: colorMode === 'dark' ? 'gray.600' : 'gray.100' }}
               onClick={(event) => {
                 // Add a brief click effect
                 const target = event.currentTarget;
