@@ -91,8 +91,9 @@ const ChatComment = ({
                       block: 'center' 
                     });
                     
-                                      // Add highlight effect
-                  parentElement.style.backgroundColor = '#e6f3ff';
+                  // Add highlight effect
+                  parentElement.style.backgroundColor = '#f0f8ff';
+                  parentElement.style.setProperty('background-color', '#f0f8ff', 'important');
                   parentElement.style.border = '1px solid #3182ce';
                   parentElement.style.borderRadius = '6px';
                   parentElement.style.boxShadow = '0 2px 8px rgba(49, 130, 206, 0.15)';

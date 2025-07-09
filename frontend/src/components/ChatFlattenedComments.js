@@ -79,6 +79,9 @@ const ChatFlattenedComments = forwardRef(({ comments }, ref) => {
     // Find the comment element using data-comment-id attribute
     const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
     
+    console.log('scrollToComment called with:', commentId);
+    console.log('Found element:', commentElement);
+    
     if (commentElement) {
       // Remove highlight from previously highlighted comment
       removeHighlight();
@@ -90,13 +93,18 @@ const ChatFlattenedComments = forwardRef(({ comments }, ref) => {
       });
       
       // Add subtle highlight effect
-      commentElement.style.backgroundColor = '#e6f3ff';
+      const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+      const highlightColor = isDarkMode ? '#22304a' : '#e3f2fd';
+      commentElement.style.setProperty('background-color', highlightColor, 'important');
       commentElement.style.border = '1px solid #3182ce';
       commentElement.style.borderRadius = '6px';
       commentElement.style.boxShadow = '0 2px 8px rgba(49, 130, 206, 0.15)';
       commentElement.style.padding = '8px';
       commentElement.style.margin = '-8px';
       commentElement.style.transition = 'all 0.3s ease';
+      
+      console.log('Applied styles to element:', commentElement);
+      console.log('Background color set to:', commentElement.style.backgroundColor);
       
       // Track this as the currently highlighted comment
       highlightedCommentRef.current = commentElement;
@@ -105,6 +113,8 @@ const ChatFlattenedComments = forwardRef(({ comments }, ref) => {
       highlightTimeoutRef.current = setTimeout(() => {
         removeHighlight();
       }, 3000);
+    } else {
+      console.log('Element not found for comment ID:', commentId);
     }
   };
 
@@ -123,7 +133,9 @@ const ChatFlattenedComments = forwardRef(({ comments }, ref) => {
       });
       
       // Add subtle highlight effect
-      commentElement.style.backgroundColor = '#e6f3ff';
+      const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+      const highlightColor = isDarkMode ? '#22304a' : '#e3f2fd';
+      commentElement.style.setProperty('background-color', highlightColor, 'important');
       commentElement.style.border = '1px solid #3182ce';
       commentElement.style.borderRadius = '6px';
       commentElement.style.boxShadow = '0 2px 8px rgba(49, 130, 206, 0.15)';
