@@ -156,12 +156,6 @@ const Navbar = ({
               {user.username}
             </MenuButton>
             <MenuList>
-              <MenuItem display={['block', 'none']} as={Link} to="/submit">
-                Submit post
-              </MenuItem>
-              <MenuItem as={Link} to="/notifications">
-                Notifications
-              </MenuItem>
               {(user.isadmin === "true") && (<MenuItem as={Link} to="/subreddits/create">
                 Create subreddit
               </MenuItem>)}
