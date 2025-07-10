@@ -14,7 +14,8 @@ import {
   Avatar,
   Badge,
 } from '@chakra-ui/react';
-import { ChatIcon, EditIcon, ArrowBackIcon } from '@chakra-ui/icons';
+import EditIcon from '@mui/icons-material/Edit';
+import ReplyIcon from '@mui/icons-material/Reply';
 import ThemedBox from './ThemedBox';
 import WriteCommentBoxWithMentions from './WriteCommentBoxWithMentions';
 import EditBoxWithMentions from './EditBoxWithMentions';
@@ -184,9 +185,9 @@ const ChatComment = ({
           <HStack spacing={2} mt={2} ml={1}>
             
             <IconButton
-              size="xs"
+              size="sm"
               variant="ghost"
-              icon={<ArrowBackIcon />}
+              icon={<ReplyIcon />}
               onClick={() => {
                 if (user) {
                   setShowWriteReply(!showWriteReply);
@@ -207,7 +208,7 @@ const ChatComment = ({
               <HStack spacing={1}>
                 {!isEditing && user.username === author && (
                   <IconButton
-                    size="xs"
+                    size="sm"
                     variant="ghost"
                     onClick={() => setIsEditing(true)}
                     icon={<EditIcon />}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { IconButton } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { createErrorSelector } from '../selectors';
 import { startDeletePost, startDeleteComment } from '../actions';
 
@@ -39,6 +39,7 @@ const DeleteButton = ({
 
   return (
     <IconButton
+      size="sm"
       onClick={handleClick}
       isLoading={isLoading}
       backgroundColor="inherit"
