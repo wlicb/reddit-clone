@@ -117,8 +117,6 @@ const ChatCommentsPage = ({
     created_at,
     title,
     body,
-    votes,
-    has_voted,
   } = post;
   const numComments = comments.filter(({ body }) => body !== null).length;
 

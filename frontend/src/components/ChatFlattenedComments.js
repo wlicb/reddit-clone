@@ -183,8 +183,6 @@ const ChatFlattenedComments = forwardRef(({ comments, subredditName }, ref) => {
               postId={comment.post_id}
               createdAt={comment.created_at}
               author={comment.author_name}
-              numVotes={comment.votes}
-              hasVoted={comment.has_voted}
               parentComment={comment.parentComment}
               onHighlightComment={highlightComment}
               subredditName={subredditName}

@@ -32,28 +32,11 @@ export const startLogin = (username, password) => async (dispatch) => {
   }
 };
 
-export const startLogout = () => async (dispatch, getState) => {
+export const startLogout = () => async (dispatch) => {
   try {
     dispatch({ type: 'LOGOUT_REQUEST' });
     await axios.post('/users/logout');
     dispatch(logout());
-    dispatch(editPost(1, { has_voted: null }));
-    dispatch(
-      setPostList(
-        postListSelector(getState()).map((post) => ({
-          ...post,
-          has_voted: null,
-        }))
-      )
-    );
-    dispatch(
-      setComments(
-        commentsSelector(getState()).map((comment) => ({
-          ...comment,
-          has_voted: null,
-        }))
-      )
-    );
     dispatch({ type: 'LOGOUT_SUCCESS' });
   } catch (e) {
     dispatch({

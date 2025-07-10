@@ -16,9 +16,8 @@ import {
 } from '@chakra-ui/react';
 import { ChatIcon, EditIcon, ArrowBackIcon } from '@chakra-ui/icons';
 import ThemedBox from './ThemedBox';
-import UpvoteBar from './UpvoteBar';
 import WriteCommentBoxWithMentions from './WriteCommentBoxWithMentions';
-import EditBox from './EditBox';
+import EditBoxWithMentions from './EditBoxWithMentions';
 import DeleteButton from './DeleteButton';
 import ChakraMarkdown from './ChakraMarkdown';
 import { userSelector } from '../selectors';
@@ -29,8 +28,6 @@ const ChatComment = ({
   postId,
   createdAt,
   author,
-  numVotes,
-  hasVoted,
   user,
   parentComment,
   onHighlightComment,
@@ -163,11 +160,12 @@ const ChatComment = ({
             position="relative"
           >
             {isEditing ? (
-              <EditBox
+              <EditBoxWithMentions
                 type="comment"
                 id={id}
                 onClose={() => setIsEditing(false)}
                 initialText={body}
+                subredditName={subredditName}
               />
             ) : (
               <Box>
@@ -184,15 +182,6 @@ const ChatComment = ({
 
           {/* Message Actions */}
           <HStack spacing={2} mt={2} ml={1}>
-            <HStack spacing={1}>
-              <UpvoteBar
-                type="comment"
-                size={4}
-                id={id}
-                numVotes={numVotes}
-                voteValue={hasVoted}
-              />
-            </HStack>
             
             <IconButton
               size="xs"

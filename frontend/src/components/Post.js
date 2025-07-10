@@ -14,8 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { ChatIcon, EditIcon } from '@chakra-ui/icons';
 import ThemedBox from './ThemedBox';
-import UpvoteBar from './UpvoteBar';
-import EditBox from './EditBox';
+import EditBoxWithMentions from './EditBoxWithMentions';
 import DeleteButton from './DeleteButton';
 import ChakraMarkdown from './ChakraMarkdown';
 import { userSelector } from '../selectors';
@@ -28,8 +27,6 @@ const Post = ({
   createdAt,
   title,
   body,
-  numVotes,
-  hasVoted,
   numComments,
   user,
 }) => {
@@ -49,12 +46,6 @@ const Post = ({
       dark="gray.700"
     >
       <Flex>
-        <UpvoteBar
-          type="post"
-          numVotes={numVotes}
-          id={id}
-          voteValue={hasVoted}
-        />
         <Box flexGrow={1}>
           <Text
             as={Link}
@@ -89,11 +80,12 @@ const Post = ({
           </Heading>
           {isTextPost ? (
             isEditing ? (
-              <EditBox
+              <EditBoxWithMentions
                 type="post"
                 id={id}
                 initialText={body}
                 onClose={() => setIsEditing(false)}
+                subredditName={subreddit}
               />
             ) : (
               <Box listStylePosition="inside">

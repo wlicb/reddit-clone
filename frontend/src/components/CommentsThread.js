@@ -23,19 +23,17 @@ class CommentsThread extends Component {
     const { showReplies } = this.state;
     const { comments } = this.props;
     const commentsToDisplay = comments.map(
-      (
-        {
-          id,
-          body,
-          post_id,
-          created_at,
-          author_name,
-          votes,
-          has_voted,
-          children,
-        },
-        idx
-      ) => (
+              (
+          {
+            id,
+            body,
+            post_id,
+            created_at,
+            author_name,
+            children,
+          },
+          idx
+        ) => (
         <Box key={`${body}-${idx}`} mt={4}>
           <Comment
             id={id}
@@ -44,8 +42,6 @@ class CommentsThread extends Component {
             postId={post_id}
             createdAt={created_at}
             author={author_name}
-            numVotes={votes}
-            hasVoted={has_voted}
           />
           {children.length > 0 && (
             <Button variant="link" onClick={() => this.toggleShowReplies(idx)}>

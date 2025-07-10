@@ -75,14 +75,7 @@ const DiscussionPostList = ({ user, isLoading, error, postList, getPostList }) =
               Replies
             </Text>
           </VStack>
-          <VStack spacing={1}>
-            <Text fontSize="2xl" fontWeight="bold" color="orange.500">
-              {filteredPosts.reduce((sum, post) => sum + post.votes, 0)}
-            </Text>
-            <Text fontSize="sm" color="gray.500">
-              Votes
-            </Text>
-          </VStack>
+
         </HStack>
       </Box>
 
@@ -96,8 +89,6 @@ const DiscussionPostList = ({ user, isLoading, error, postList, getPostList }) =
               title,
               body,
               created_at,
-              votes,
-              has_voted,
               number_of_comments,
               author_name,
               subreddit_name,
@@ -112,8 +103,6 @@ const DiscussionPostList = ({ user, isLoading, error, postList, getPostList }) =
                 title={title}
                 body={body}
                 numComments={number_of_comments}
-                numVotes={votes}
-                hasVoted={has_voted}
               />
             )
           )}

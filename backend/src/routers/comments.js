@@ -19,13 +19,9 @@ const selectCommentStatement = `
 const selectAllCommentsStatement = `
   select
   c.id, c.body, c.post_id, c.parent_comment_id, c.created_at, c.updated_at,
-  max(u.username) author_name,
-  cast(coalesce(sum(cv.vote_value), 0) as int) votes,
-  max(ucv.vote_value) has_voted
+  max(u.username) author_name
   from comments c
   left join users u on c.author_id = u.id
-  left join comment_votes cv on c.id = cv.comment_id
-  left join comment_votes ucv on ucv.comment_id = c.id and ucv.user_id = $1
   group by c.id
 `
 
@@ -33,16 +29,12 @@ const selectPostStatement = `
   select
     p.id, p.type, p.title, p.body, p.created_at, p.updated_at,
     max(u.username) author_name,
-    cast(coalesce(sum(pv.vote_value), 0) as int) votes,
-    max(upv.vote_value) has_voted,
     max(sr.name) subreddit_name
   from posts p
   left join users u on p.author_id = u.id
   inner join subreddits sr on p.subreddit_id = sr.id
-  left join post_votes pv on p.id = pv.post_id
-  left join post_votes upv on upv.post_id = p.id and upv.user_id = $1
   group by p.id
-  having p.id = $2
+  having p.id = $1
 `
 
 
@@ -62,12 +54,10 @@ router.get('/:post_id', auth, async (req, res) => {
 
     const selectCommentsStatement = `
       ${selectAllCommentsStatement}
-      having c.post_id = $2
-      order by votes desc
+      having c.post_id = $1
     `
-    const user_id = req.user ? req.user.id : -1
-    const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
-    const { rows: comments } = await query(selectCommentsStatement, [user_id, post_id])
+    const { rows: [post] } = await query(selectPostStatement, [post_id])
+    const { rows: comments } = await query(selectCommentsStatement, [post_id])
 
 
     if (!post) {
@@ -101,8 +91,7 @@ router.post('/', auth, async (req, res) => {
       throw new Error('Must specify post to comment on')
     }
 
-    const user_id = req.user ? req.user.id : -1
-    const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
+    const { rows: [post] } = await query(selectPostStatement, [post_id])
     if (!post) {
       return res.status(404).send({ error: 'Could not find post with that id' })
     }
@@ -183,16 +172,16 @@ router.post('/', auth, async (req, res) => {
     }
 
     // Automatically upvote own comment
-    const createVoteStatement = `insert into comment_votes values ($1, $2, $3)`
-    await query(createVoteStatement, [req.user.id, id, 1])
+    // const createVoteStatement = `insert into comment_votes values ($1, $2, $3)`
+    // await query(createVoteStatement, [req.user.id, id, 1])
 
     const selectInsertedCommentStatement = `
       ${selectAllCommentsStatement}
-      having c.id = $2
+      having c.id = $1
     `
 
     await logAction({ userId: req.user.id, action: 'add_comment', targetId: id, targetType: "comment", metadata: { body: body, post_id: post_id, parent_comment_id: parent_comment_id } });
-    const { rows: [comment] } = await query(selectInsertedCommentStatement, [req.user.id, id])
+    const { rows: [comment] } = await query(selectInsertedCommentStatement, [id])
     res.status(201).send(comment)
   } catch (e) {
     res.status(400).send({ error: e.message })
@@ -211,7 +200,7 @@ router.put('/:id', auth, async (req, res) => {
 
     const post_id = comment.post_id
     const user_id = req.user ? req.user.id : -1
-    const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
+    const { rows: [post] } = await query(selectPostStatement, [post_id])
     if (!post) {
       return res.status(404).send({ error: 'Could not find post with that id' })
     }
@@ -233,10 +222,71 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).send({ error: 'You must be the comment author to edit it' })
     }
 
+    // Get the old comment body to compare mentions
+    const { rows: [oldComment] } = await query(
+      `SELECT body FROM comments WHERE id = $1`,
+      [id]
+    );
+
+    const oldBody = oldComment ? oldComment.body : '';
+    const newBody = req.body.body;
+
+    // Extract mentions from old and new body
+    const oldMentions = (oldBody.match(/@([a-zA-Z0-9_]+)/g) || []).map(m => m.slice(1));
+    const newMentions = (newBody.match(/@([a-zA-Z0-9_]+)/g) || []).map(m => m.slice(1));
+
+    // Remove old mentions and their notifications
+    if (oldMentions.length > 0) {
+      // Get user IDs for old mentions
+      const { rows: oldMentionedUsers } = await query(
+        `SELECT id, username FROM users WHERE username = ANY($1)`,
+        [oldMentions]
+      );
+
+      for (const user of oldMentionedUsers) {
+        // Remove mention record
+        await query(
+          `DELETE FROM comment_mentions WHERE comment_id = $1 AND mentioned_user_id = $2`,
+          [id, user.id]
+        );
+
+      }
+    }
+
+    // Add new mentions and create notifications
+    if (newMentions.length > 0) {
+      // Look up user IDs for mentioned usernames
+      const { rows: mentionedUsers } = await query(
+        `SELECT id, username FROM users WHERE username = ANY($1)`,
+        [newMentions]
+      );
+      
+      for (const user of mentionedUsers) {
+        // Don't notify the comment author about their own mentions
+        if (user.id !== req.user.id) {
+          await query(
+            `INSERT INTO comment_mentions (comment_id, mentioned_user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+            [id, user.id]
+          );
+          
+          // Create mention notification
+          await query(
+            `INSERT INTO notifications (user_id, type, comment_id, post_id, created_at) 
+             VALUES ($1, $2, $3, $4, NOW())`,
+            [
+              user.id,
+              'mention',
+              id,
+              post_id
+            ]
+          );
+        }
+      }
+    }
+
     const updatedComment = await updateTableRow('comments', id, ['body'], req.body)
 
     await logAction({ userId: req.user.id, action: 'edit_comment', targetId: id, targetType: "comment", metadata: { body: req.body.body } });
-
 
     res.send(updatedComment)
   } catch (e) {
@@ -254,7 +304,7 @@ router.delete('/:id', auth, async (req, res) => {
 
     const post_id = comment.post_id
     const user_id = req.user ? req.user.id : -1
-    const { rows: [post] } = await query(selectPostStatement, [user_id, post_id])
+    const { rows: [post] } = await query(selectPostStatement, [post_id])
     if (!post) {
       return res.status(404).send({ error: 'Could not find post with that id' })
     }
@@ -275,6 +325,12 @@ router.delete('/:id', auth, async (req, res) => {
         && (await userIsModerator(req.user.username, comment.subreddit_name) === false)) {
       return res.status(403).send({ error: 'You must be the comment author to delete it' })
     }
+
+    // Remove all mentions and notifications for this comment
+    await query(
+      `DELETE FROM comment_mentions WHERE comment_id = $1`,
+      [id]
+    );
 
     // const deleteCommentStatement = `delete from comments where id = $1 returning *`
     // const { rows: [deletedComment] } = await query(deleteCommentStatement, [id])

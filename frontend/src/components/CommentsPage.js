@@ -78,8 +78,6 @@ const CommentsPage = ({
     created_at,
     title,
     body,
-    votes,
-    has_voted,
   } = post;
   const numComments = comments.filter(({ body }) => body !== null).length;
 
@@ -95,8 +93,6 @@ const CommentsPage = ({
         title={title}
         body={body}
         numComments={numComments}
-        numVotes={votes}
-        hasVoted={has_voted}
       />
       <br />
       {user ? (

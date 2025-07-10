@@ -17,8 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { ChatIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icons';
 import ThemedBox from './ThemedBox';
-import UpvoteBar from './UpvoteBar';
-import EditBox from './EditBox';
+import EditBoxWithMentions from './EditBoxWithMentions';
 import DeleteButton from './DeleteButton';
 import ChakraMarkdown from './ChakraMarkdown';
 import { userSelector } from '../selectors';
@@ -31,8 +30,6 @@ const DiscussionPost = ({
   createdAt,
   title,
   body,
-  numVotes,
-  hasVoted,
   numComments,
   user,
 }) => {
@@ -109,14 +106,15 @@ const DiscussionPost = ({
           {/* Content */}
           {isTextPost && (
             <Box mb={4}>
-              {isEditing ? (
-                <EditBox
-                  type="post"
-                  id={id}
-                  initialText={body}
-                  onClose={() => setIsEditing(false)}
-                />
-              ) : (
+                          {isEditing ? (
+              <EditBoxWithMentions
+                type="post"
+                id={id}
+                initialText={body}
+                onClose={() => setIsEditing(false)}
+                subredditName={subreddit}
+              />
+            ) : (
                 <Box>
                   <ChakraMarkdown>{body}</ChakraMarkdown>
                 </Box>
@@ -134,11 +132,7 @@ const DiscussionPost = ({
                 </Text>
               </HStack>
               
-              <HStack spacing={1} color="gray.500">
-                <Text fontSize="sm">
-                  {numVotes} {numVotes === 1 ? 'vote' : 'votes'}
-                </Text>
-              </HStack>
+
             </HStack>
 
             {/* Action Buttons */}
@@ -179,15 +173,7 @@ const DiscussionPost = ({
           </Flex>
         </Box>
 
-        {/* Voting */}
-        <VStack spacing={1} align="center" minW="40px">
-          <UpvoteBar
-            type="post"
-            numVotes={numVotes}
-            id={id}
-            voteValue={hasVoted}
-          />
-        </VStack>
+
       </Flex>
     </ThemedBox>
   );

@@ -13,9 +13,8 @@ import {
 } from '@chakra-ui/react';
 import { ChatIcon, EditIcon } from '@chakra-ui/icons';
 import ThemedBox from './ThemedBox';
-import UpvoteBar from './UpvoteBar';
 import WriteCommentBox from './WriteCommentBox';
-import EditBox from './EditBox';
+import EditBoxWithMentions from './EditBoxWithMentions';
 import DeleteButton from './DeleteButton';
 import ChakraMarkdown from './ChakraMarkdown';
 import { userSelector } from '../selectors';
@@ -26,9 +25,8 @@ const Comment = ({
   postId,
   createdAt,
   author,
-  numVotes,
-  hasVoted,
   user,
+  subredditName,
 }) => {
   const { colorMode } = useColorMode();
   const commentDetailColor = 'gray.500';
@@ -48,13 +46,6 @@ const Comment = ({
       dark="gray.700"
     >
       <Flex>
-        <UpvoteBar
-          type="comment"
-          size={5}
-          id={id}
-          numVotes={numVotes}
-          voteValue={hasVoted}
-        />
         <Box flexGrow={1}>
           <Text as="span" isTruncated>
             {author === null ? deletedText : author}
@@ -66,12 +57,13 @@ const Comment = ({
           </Text>
           {isEditing ? (
             <Box mt={7}>
-              <EditBox
-                type="comment"
-                id={id}
-                onClose={() => setIsEditing(false)}
-                initialText={body}
-              />
+                          <EditBoxWithMentions
+              type="comment"
+              id={id}
+              onClose={() => setIsEditing(false)}
+              initialText={body}
+              subredditName={subredditName}
+            />
             </Box>
           ) : (
             <Text>

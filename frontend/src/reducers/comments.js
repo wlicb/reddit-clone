@@ -6,7 +6,7 @@ const commentsReducer = (state = { comments: [], newCommentId: null }, action) =
       return {
         ...state,
         comments: state.comments.map((comment) =>
-          comment.id === action.id ? { ...comment, ...action.updates } : comment
+        comment.id === action.id ? { ...comment, ...action.updates } : comment
         )
       };
     case 'DELETE_COMMENT':
@@ -14,7 +14,7 @@ const commentsReducer = (state = { comments: [], newCommentId: null }, action) =
       return {
         ...state,
         comments: state.comments.map((comment) =>
-          comment.id === action.id ? { ...comment, ...deletedFields } : comment
+        comment.id === action.id ? { ...comment, ...deletedFields } : comment
         )
       };
     case 'SUBMIT_COMMENT_SUCCESS':

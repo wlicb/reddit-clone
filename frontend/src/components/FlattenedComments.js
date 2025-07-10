@@ -2,7 +2,7 @@ import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { Box, Text, Flex, Badge } from '@chakra-ui/react';
 import Comment from './Comment';
 
-const FlattenedComments = forwardRef(({ comments }, ref) => {
+const FlattenedComments = forwardRef(({ comments, subredditName }, ref) => {
   // Create refs for scrolling to comments
   const commentRefs = useRef(new Map());
   // Track currently highlighted comment
@@ -178,8 +178,7 @@ const FlattenedComments = forwardRef(({ comments }, ref) => {
               postId={comment.post_id}
               createdAt={comment.created_at}
               author={comment.author_name}
-              numVotes={comment.votes}
-              hasVoted={comment.has_voted}
+              subredditName={subredditName}
             />
           </Box>
         </Box>

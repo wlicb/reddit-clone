@@ -6,7 +6,6 @@ const postsRouter = require('./routers/posts')
 const subredditsRouter = require('./routers/subreddits')
 const moderatorsRouter = require('./routers/moderators')
 const commentsRouter = require('./routers/comments')
-const votesRouter = require('./routers/votes')
 const notificationsRouter = require('./routers/notifications');
 const port = process.env.PORT
 
@@ -20,7 +19,6 @@ app.use('/posts', postsRouter)
 app.use('/subreddits', subredditsRouter)
 app.use('/moderators', moderatorsRouter)
 app.use('/comments', commentsRouter)
-app.use('/votes', votesRouter)
 app.use('/notifications', notificationsRouter); 
 
 app.listen(port, () => {

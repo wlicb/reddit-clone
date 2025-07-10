@@ -46,8 +46,6 @@ const PostList = ({ user, isLoading, error, postList, getPostList }) => {
             title,
             body,
             created_at,
-            votes,
-            has_voted,
             number_of_comments,
             author_name,
             subreddit_name,
@@ -62,8 +60,6 @@ const PostList = ({ user, isLoading, error, postList, getPostList }) => {
                 title={title}
                 body={body}
                 numComments={number_of_comments}
-                numVotes={votes}
-                hasVoted={has_voted}
               />
             </Box>
           )
