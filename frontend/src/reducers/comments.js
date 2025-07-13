@@ -41,12 +41,15 @@ const commentsReducer = (state = { comments: [], newCommentId: null }, action) =
         )
       };
     case 'DELETE_REALTIME_COMMENT':
-      return {
+      const realtimeDeletedFields = { body: null, author_name: null };
+      const result = {
         ...state,
         comments: state.comments.map((comment) =>
-          comment.id === action.commentId ? { ...comment, body: null, author_name: null } : comment
+        comment.id === parseInt(action.commentId) ? { ...comment, ...realtimeDeletedFields } : comment
         )
       };
+      // console.log('result:', result);
+      return result;
     case 'CLEAR_NEW_COMMENT_ID':
       return { ...state, newCommentId: null };
     default:
