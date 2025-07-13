@@ -297,7 +297,7 @@ router.put('/:id', auth, async (req, res) => {
   }
 })
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, adminAuth, async (req, res) => {
   try {
     const { id } = req.params
     const { rows: [comment] } = await query(selectCommentStatement, [id])

@@ -210,20 +210,20 @@ const ChatComment = ({
               aria-label="Reply"
             />
 
-            {user && ((user.username && user.username === author) || user.isadmin === "true") && (
-              <HStack spacing={1}>
-                {!isEditing && user.username === author && (
-                  <IconButton
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setIsEditing(true)}
-                    icon={<EditIcon />}
-                    aria-label="Edit message"
-                  />
-                )}
+            <HStack spacing={1}>
+              {user && !isEditing && user.username === author && (
+                <IconButton
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsEditing(true)}
+                  icon={<EditIcon />}
+                  aria-label="Edit message"
+                />
+              )}
+              {user && user.isadmin === "true" && (
                 <DeleteButton type="comment" id={id} />
-              </HStack>
-            )}
+              )}
+            </HStack>
           </HStack>
 
           {/* Reply Box */}
