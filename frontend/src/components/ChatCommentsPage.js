@@ -32,6 +32,7 @@ import { getPostAndComments } from '../actions';
 import { clearNewCommentId } from '../actions/comments';
 import { HStack as ChakraHStack } from '@chakra-ui/react';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { markPostAsViewed } from '../actions/post';
 
 const getCommentsWithChildren = (comments) => {
   const commentsWithChildren = comments.map((comment) => ({
@@ -62,6 +63,7 @@ const ChatCommentsPage = ({
   user,
   newCommentId,
   clearNewCommentId,
+  markPostAsViewed,
 }) => {
   const { id } = useParams();
   const { colorMode } = useColorMode();
@@ -73,6 +75,12 @@ const ChatCommentsPage = ({
   useEffect(() => {
     getPostAndComments(id);
   }, [getPostAndComments, id]);
+
+  useEffect(() => {
+    if (post && post.id && user) {
+      markPostAsViewed(post.id);
+    }
+  }, [post, user, markPostAsViewed]);
 
   // Handle new comment highlighting and scrolling
   useEffect(() => {
@@ -248,6 +256,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   getPostAndComments: (id) => dispatch(getPostAndComments(id)),
   clearNewCommentId: () => dispatch(clearNewCommentId()),
+  markPostAsViewed: (id) => dispatch(markPostAsViewed(id)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChatCommentsPage); 

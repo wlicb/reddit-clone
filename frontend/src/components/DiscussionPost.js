@@ -32,6 +32,7 @@ const DiscussionPost = ({
   body,
   numComments,
   user,
+  unreadReplies = 0,
 }) => {
   const { colorMode } = useColorMode();
   const isTextPost = type === 'text';
@@ -43,8 +44,8 @@ const DiscussionPost = ({
       p={[4, 6]}
       borderRadius="lg"
       width="100%"
-      light="white"
-      dark="gray.800"
+      light={unreadReplies > 0 ? '#f0f8ff' : 'white'}
+      dark={unreadReplies > 0 ? '#253048' : 'gray.800'}
       border="1px solid"
       borderColor={colorMode === 'light' ? 'gray.200' : 'gray.600'}
       _hover={{
@@ -104,6 +105,13 @@ const DiscussionPost = ({
           >
             {title || deletedText}
             {!isTextPost && <ExternalLinkIcon ml={2} boxSize={3} />}
+            {unreadReplies > 0 && (
+              <Box as="span" ml={3}>
+                <Badge colorScheme="yellow" variant="solid" fontSize="xs">
+                  New Replies
+                </Badge>
+              </Box>
+            )}
           </Text>
 
           {/* Content */}

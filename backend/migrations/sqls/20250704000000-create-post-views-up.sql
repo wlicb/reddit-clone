@@ -1,0 +1,7 @@
+CREATE TABLE post_views (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  last_viewed_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, post_id)
+); 

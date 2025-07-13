@@ -54,3 +54,14 @@ export const submitPost = (postDetails) => async (dispatch) => {
     });
   }
 };
+
+export const markPostAsViewed = (postId) => async (dispatch) => {
+  try {
+    console.log(`Marking post ${postId} as viewed`);
+    await axios.post(`/posts/${postId}/view`);
+    // Optionally dispatch an action to update the post list
+    dispatch({ type: 'MARK_POST_VIEWED', postId });
+  } catch (error) {
+    console.error('Failed to mark post as viewed:', error);
+  }
+};

@@ -38,7 +38,7 @@ export const useWebSocket = (postId) => {
 
     webSocketService.onCommentDelete((commentId) => {
       console.log('Deleting real-time comment:', commentId);
-      dispatch(deleteRealTimeComment(String(commentId)));
+      dispatch(deleteRealTimeComment(commentId));
     });
 
     // Cleanup function

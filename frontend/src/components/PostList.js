@@ -20,6 +20,7 @@ const PostList = ({ user, isLoading, error, postList, getPostList }) => {
   useEffect(() => {
     if (user) {
       getPostList({ subreddit });
+
     }
   }, [getPostList, subreddit, user]);
 
@@ -51,6 +52,7 @@ const PostList = ({ user, isLoading, error, postList, getPostList }) => {
             number_of_comments,
             author_name,
             subreddit_name,
+            unread_replies,
           }) => (
             (subreddit_name === user.selectedsubreddit || user.isadmin === 'true') && <Box key={`${id}-${title}`} my={4}>
               <Post
@@ -62,6 +64,7 @@ const PostList = ({ user, isLoading, error, postList, getPostList }) => {
                 title={title}
                 body={body}
                 numComments={number_of_comments}
+                unreadReplies={unread_replies}
               />
             </Box>
           )

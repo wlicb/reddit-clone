@@ -10,6 +10,7 @@ export const getPostList = (filters) => async (dispatch) => {
     dispatch({ type: 'GET_POST_LIST_REQUEST' });
     const response = await axios.get('/posts', { params: filters });
     dispatch(setPostList(response.data));
+    console.log(response.data)
     dispatch({ type: 'GET_POST_LIST_SUCCESS' });
   } catch (e) {
     // Don't show authentication errors when user is not logged in

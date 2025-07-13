@@ -9,18 +9,29 @@ const subredditAuth = require('../utils/subreddit_auth')
 
 const router = express.Router()
 
+// Replace selectPostStatement with a version that uses a lateral join for post_views
 const selectPostStatement = `
   select
-  p.id, p.type, p.title, p.body, p.created_at, p.updated_at,
-  (select cast(count(*) as int) from comments c where p.id = c.post_id and c.body is not null) number_of_comments,
-  max(u.username) author_name,
-  max(u.isBot) author_isBot,
-  max(sr.name) subreddit_name
+    p.id, p.type, p.title, p.body, p.created_at, p.updated_at,
+    (select cast(count(*) as int) from comments c where p.id = c.post_id and c.body is not null) number_of_comments,
+    max(u.username) author_name,
+    max(u.isBot) author_isBot,
+    max(sr.name) subreddit_name,
+    COALESCE(unread_replies.unread_replies, 0) as unread_replies
   from posts p
   left join users u on p.author_id = u.id
   inner join subreddits sr on p.subreddit_id = sr.id
-  group by p.id
-`
+  left join lateral (
+    select
+      cast(count(*) as int) as unread_replies
+    from comments c
+    left join post_views pv on pv.post_id = p.id and pv.user_id = $1
+    where c.post_id = p.id
+      and c.body is not null
+      and c.created_at > COALESCE(pv.last_viewed_at, '1970-01-01'::timestamptz)
+  ) as unread_replies on true
+  group by p.id, unread_replies.unread_replies
+`;
 
 router.get('/', auth, async (req, res) => {
   try {
@@ -52,7 +63,7 @@ router.get('/', auth, async (req, res) => {
     const havingAndClause = []
     if (subreddit) {
       queryArgs.push(subreddit)
-      havingAndClause.push(`${columnNamesEnum['subreddit']} = $${queryArgs.length}`)
+      havingAndClause.push(`${columnNamesEnum['subreddit']} = $${queryArgs.length + 1}`)
     }
 
     const selectFilteredPostsStatement = `
@@ -61,9 +72,11 @@ router.get('/', auth, async (req, res) => {
       ${havingAndClause.length > 0 ? 'and' : ''} ${havingAndClause.join(' and ')}
     `
 
-    const { rows } = await query(selectFilteredPostsStatement, queryArgs)
+    const { rows } = await query(selectFilteredPostsStatement, [req.user.id, ...queryArgs])
+    
     res.send(rows)
   } catch (e) {
+    console.log(e)
     res.status(500).send({ error: e.message })
   }
 })
@@ -71,7 +84,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params
-    const { rows: [post] } = await query(`${selectPostStatement} having p.id = $1`, [id])
+    const { rows: [post] } = await query(`${selectPostStatement} having p.id = $2`, [req.user.id, id])
 
     let auth = null;
     const subreddit = post.subreddit_name
@@ -206,6 +219,35 @@ router.delete('/:id', auth, adminAuth, async (req, res) => {
     res.send(deletedPost)
   } catch (e) {
     res.status(400).send({ error: e.message })
+  }
+})
+
+// Mark post as viewed by user
+router.post('/:id/view', auth, async (req, res) => {
+  try {
+    const { id } = req.params
+    
+    // Check if post exists
+    const selectPostStatement = `select * from posts where id = $1`
+    const { rows: [post] } = await query(selectPostStatement, [id])
+    
+    if (!post) {
+      return res.status(404).send({ error: 'Could not find post with that id' })
+    }
+
+    // Upsert post view record
+    const upsertPostViewStatement = `
+      INSERT INTO post_views (user_id, post_id, last_viewed_at)
+      VALUES ($1, $2, NOW())
+      ON CONFLICT (user_id, post_id)
+      DO UPDATE SET last_viewed_at = NOW()
+    `
+    
+    await query(upsertPostViewStatement, [req.user.id, id])
+    
+    res.send({ success: true })
+  } catch (e) {
+    res.status(500).send({ error: e.message })
   }
 })
 

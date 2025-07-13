@@ -29,10 +29,12 @@ const Post = ({
   body,
   numComments,
   user,
+  unreadReplies = 0,
 }) => {
   const { colorMode } = useColorMode();
   const postDetailColor = 'gray.500';
   const postDetailBgColor = colorMode === 'light' ? 'gray.100' : 'gray.600';
+  const highlightBgColor = colorMode === 'light' ? 'yellow.100' : 'yellow.700';
   const isTextPost = type === 'text';
 
   const [isEditing, setIsEditing] = useState(false);
@@ -42,8 +44,9 @@ const Post = ({
       p={[3, 4]}
       borderRadius="md"
       width="100%"
-      light="gray.50"
-      dark="gray.700"
+      light={unreadReplies > 0 ? 'yellow.50' : 'gray.50'}
+      dark={unreadReplies > 0 ? 'yellow.800' : 'gray.700'}
+      border={unreadReplies > 0 ? '2px solid #ECC94B' : undefined}
     >
       <Flex direction={['column', 'row']} gap={[2, 0]}>
         <Box flexGrow={1} minW={0}>
@@ -80,6 +83,13 @@ const Post = ({
             minH="auto"
           >
             {title || deletedText}
+            {unreadReplies > 0 && (
+              <Box as="span" ml={3}>
+                <Text as="span" fontSize="sm" fontWeight="bold" color="yellow.700" bg="yellow.200" px={2} py={1} borderRadius="md">
+                  New Replies
+                </Text>
+              </Box>
+            )}
           </Heading>
           {isTextPost ? (
             isEditing ? (

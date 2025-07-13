@@ -23,6 +23,7 @@ import {
 import { getPostAndComments } from '../actions';
 import { HStack } from '@chakra-ui/react';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { markPostAsViewed } from '../actions/post';
 
 const getCommentsWithChildren = (comments) => {
   const commentsWithChildren = comments.map((comment) => ({
@@ -51,6 +52,7 @@ const CommentsPage = ({
   comments,
   getPostAndComments,
   user,
+  markPostAsViewed,
 }) => {
   const { id } = useParams();
   
@@ -60,6 +62,12 @@ const CommentsPage = ({
   useEffect(() => {
     getPostAndComments(id);
   }, [getPostAndComments, id]);
+
+  useEffect(() => {
+    if (post && post.id && user) {
+      markPostAsViewed(post.id);
+    }
+  }, [post, user, markPostAsViewed]);
 
   if (isLoading) {
     return (
@@ -147,6 +155,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   getPostAndComments: (id) => dispatch(getPostAndComments(id)),
+  markPostAsViewed: (id) => dispatch(markPostAsViewed(id)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(CommentsPage);
