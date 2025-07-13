@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
+import { useToast } from '@chakra-ui/react';
 import webSocketService from '../services/websocket';
 import { 
   addRealTimeNotification, 
@@ -10,6 +11,7 @@ import {
 export const useNotificationsWebSocket = () => {
   const dispatch = useDispatch();
   const isInitialized = useRef(false);
+  const toast = useToast();
 
   useEffect(() => {
     // Only initialize once to prevent multiple connections
@@ -27,6 +29,21 @@ export const useNotificationsWebSocket = () => {
     webSocketService.onNewNotification((notification) => {
       console.log('Received real-time notification:', notification);
       dispatch(addRealTimeNotification(notification));
+      // Show toast
+      let description = 'You have a new notification';
+      if (notification.type === 'mention') {
+        description = 'Someone mentioned you in a comment';
+      } else if (notification.type === 'reply') {
+        description = 'Someone replied to your comment';
+      }
+      toast({
+        title: 'New Notification',
+        description,
+        status: 'info',
+        duration: 2000,
+        isClosable: true,
+        position: 'top-right',
+      });
     });
 
     webSocketService.onNotificationUpdate((data) => {
@@ -45,7 +62,7 @@ export const useNotificationsWebSocket = () => {
       // For now, we'll keep the connection alive since it's used globally
       // webSocketService.removeAllListeners();
     };
-  }, [dispatch]);
+  }, [dispatch, toast]);
 
   return webSocketService;
 }; 
