@@ -29,26 +29,26 @@ const initializeWebSocket = (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`User ${socket.userId} connected`);
+    // console.log(`User ${socket.userId} connected`);
 
     // Entered notification room
     socket.join(`user-${socket.userId}`);
-    console.log(`User ${socket.userId} entered notification room`);
+    // console.log(`User ${socket.userId} entered notification room`);
 
     // Join a post room to receive real-time updates for that post
     socket.on('join-post', (postId) => {
       socket.join(`post-${postId}`);
-      console.log(`User ${socket.userId} joined post ${postId}`);
+    //   console.log(`User ${socket.userId} joined post ${postId}`);
     });
 
     // Leave a post room
     socket.on('leave-post', (postId) => {
       socket.leave(`post-${postId}`);
-      console.log(`User ${socket.userId} left post ${postId}`);
+    //   console.log(`User ${socket.userId} left post ${postId}`);
     });
 
     socket.on('disconnect', () => {
-      console.log(`User ${socket.userId} disconnected`);
+    //   console.log(`User ${socket.userId} disconnected`);
     });
   });
 
@@ -120,6 +120,7 @@ const emitNotificationUpdate = (userId, notificationId, updates) => {
 // Function to emit unread notification count update
 const emitUnreadNotificationCount = (userId, count) => {
   if (io) {
+    // console.log(userId, count)
     io.to(`user-${userId}`).emit('unread-notification-count', {
       type: 'unread-notification-count',
       count: count

@@ -9,7 +9,12 @@ class WebSocketService {
   }
 
   connect() {
-    // Always try to connect, even if already connected (handles reconnection)
+    // Only connect if not already connected
+    if (this.socket && this.isConnected) {
+      console.log('WebSocket already connected, skipping connection');
+      return;
+    }
+
     const token = getToken();
     if (!token) {
       console.warn('No token available for WebSocket connection');
@@ -21,6 +26,7 @@ class WebSocketService {
       this.socket.disconnect();
     }
 
+    console.log('Connecting to WebSocket...');
     this.socket = io(process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001', {
       auth: {
         token: token

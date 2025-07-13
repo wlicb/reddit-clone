@@ -130,40 +130,12 @@ const Navbar = ({
 
       {user ? (
         <HStack>
-          <IconButton
-            as={Link}
-            to="/notifications"
-            aria-label="Notifications"
-            icon={<BellIcon />}
-            variant="ghost"
-            position="relative"
-            display={['none', 'flex']}
-          >
-            {unreadCount > 0 && (
-              <Badge
-                colorScheme="red"
-                variant="solid"
-                position="absolute"
-                top="-1"
-                right="-1"
-                borderRadius="full"
-                fontSize="xs"
-                minW="20px"
-                h="20px"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </Badge>
-            )}
-          </IconButton>
           <Menu>
             <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
               {user.username}
             </MenuButton>
             <MenuList>
-              <MenuItem as={Link} to="/notifications" display={['flex', 'none']}>
+              <MenuItem as={Link} to="/notifications">
                 <HStack spacing={2}>
                   <BellIcon />
                   <Text>Notifications</Text>

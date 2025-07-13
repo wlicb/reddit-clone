@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import webSocketService from '../services/websocket';
 import { 
@@ -9,8 +9,17 @@ import {
 
 export const useNotificationsWebSocket = () => {
   const dispatch = useDispatch();
+  const isInitialized = useRef(false);
 
   useEffect(() => {
+    // Only initialize once to prevent multiple connections
+    if (isInitialized.current) {
+      return;
+    }
+    
+    isInitialized.current = true;
+    console.log('useNotificationsWebSocket - initializing');
+
     // Connect to WebSocket
     webSocketService.connect();
 
@@ -32,7 +41,9 @@ export const useNotificationsWebSocket = () => {
 
     // Cleanup function
     return () => {
-      webSocketService.removeAllListeners();
+      // Only cleanup if this is the last component using the hook
+      // For now, we'll keep the connection alive since it's used globally
+      // webSocketService.removeAllListeners();
     };
   }, [dispatch]);
 

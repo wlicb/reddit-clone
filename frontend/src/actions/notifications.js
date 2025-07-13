@@ -52,9 +52,13 @@ export const markNotificationAsRead = (notificationId) => async (dispatch) => {
 export const getUnreadCount = () => async (dispatch) => {
   try {
     const response = await axios.get('/notifications/unread_count');
-    return response.data.count;
+    const count = response.data.count;
+    console.log(count)
+    dispatch(updateUnreadNotificationCount(count));
+    return count;
   } catch (error) {
     console.error('Error fetching unread count:', error);
+    dispatch(updateUnreadNotificationCount(0));
     return 0;
   }
 };

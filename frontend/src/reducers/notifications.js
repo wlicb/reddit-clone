@@ -14,7 +14,8 @@ const initialState = {
   notifications: [],
   loading: false,
   error: null,
-  markingRead: null
+  markingRead: null,
+  unreadCount: 0
 };
 
 const notificationsReducer = (state = initialState, action) => {
