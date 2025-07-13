@@ -5,12 +5,13 @@ class WebSocketService {
   constructor() {
     this.socket = null;
     this.isConnected = false;
+    this.isConnecting = false;
     this.listeners = new Map();
   }
 
   connect() {
     // Only connect if not already connected
-    if (this.socket && this.isConnected) {
+    if (this.socket && (this.isConnected || this.isConnecting)) {
       console.log('WebSocket already connected, skipping connection');
       return;
     }
@@ -27,6 +28,7 @@ class WebSocketService {
     }
 
     console.log('Connecting to WebSocket...');
+    this.isConnecting = true;
     this.socket = io(process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001', {
       auth: {
         token: token
@@ -40,16 +42,19 @@ class WebSocketService {
     this.socket.on('connect', () => {
       console.log('WebSocket connected');
       this.isConnected = true;
+      this.isConnecting = false;
     });
 
     this.socket.on('disconnect', () => {
       console.log('WebSocket disconnected');
       this.isConnected = false;
+      this.isConnecting = false;
     });
 
     this.socket.on('connect_error', (error) => {
       console.error('WebSocket connection error:', error);
       this.isConnected = false;
+      this.isConnecting = false;
     });
   }
 
@@ -105,7 +110,7 @@ class WebSocketService {
   onUnreadRepliesUpdate(callback) {
     if (this.socket) {
       this.socket.on('unread-replies-update', (data) => {
-        console.log('Received unread replies update:', data);
+        // console.log('Received unread replies update:', data);
         callback(data);
       });
     }

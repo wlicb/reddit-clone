@@ -93,7 +93,7 @@ router.get('/:id', auth, async (req, res) => {
     } catch (err) {
       return res.status(401).send({ error: err.message });
     }
-    console.log(post)
+    // console.log(post)
 
     if (!post) {
       return res.status(404).send({ error: 'Could not find post with that id' })

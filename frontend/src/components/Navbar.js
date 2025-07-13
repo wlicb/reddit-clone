@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -31,7 +31,7 @@ import {
 import { startLogout } from '../actions/auth';
 import { getSubreddits } from '../actions/subreddits';
 import { getUnreadCount } from '../actions/notifications';
-import { useNotificationsWebSocket } from '../hooks/useNotificationsWebSocket';
+import { useWebSocket } from '../hooks/useWebSocket';
 import RegisterButton from './RegisterButton';
 import LoginButton from './LoginButton';
 
@@ -48,8 +48,8 @@ const Navbar = ({
   const location = useLocation();
   const subredditName = location.pathname.match(/r\/[^\/]+/);
 
-  // Initialize real-time notifications WebSocket
-  useNotificationsWebSocket();
+  // Initialize WebSocket for notifications with toast notifications
+  useWebSocket(null, true);
 
   useEffect(() => {
     if (user) {

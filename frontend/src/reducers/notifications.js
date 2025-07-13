@@ -66,6 +66,15 @@ const notificationsReducer = (state = initialState, action) => {
       };
     
     case ADD_REAL_TIME_NOTIFICATION:
+      // Check if notification already exists to prevent duplicates
+      const notificationExists = state.notifications.some(
+        notification => notification.id === action.payload.id
+      );
+      
+      if (notificationExists) {
+        return state; // Don't add if it already exists
+      }
+      
       return {
         ...state,
         notifications: [action.payload, ...state.notifications]

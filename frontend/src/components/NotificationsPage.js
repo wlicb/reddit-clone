@@ -10,13 +10,13 @@ import {
   AlertIcon,
   useColorModeValue,
   Flex,
-  Heading
+  Heading,
 } from '@chakra-ui/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchNotifications, markNotificationAsRead } from '../actions/notifications';
 import { useHistory } from 'react-router-dom';
 import { getPost } from '../actions/post';
-import { useNotificationsWebSocket } from '../hooks/useNotificationsWebSocket';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const NotificationsPage = () => {
   const dispatch = useDispatch();
@@ -26,8 +26,8 @@ const NotificationsPage = () => {
   const [navigating, setNavigating] = useState(null);
   const [isMounted, setIsMounted] = useState(true);
 
-  // Initialize real-time notifications WebSocket
-  useNotificationsWebSocket();
+  // Initialize WebSocket for notifications without toast notifications
+  useWebSocket(null, false);
 
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const unreadBg = useColorModeValue('blue.50', 'blue.900');

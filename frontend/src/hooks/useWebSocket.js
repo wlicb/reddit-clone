@@ -1,15 +1,28 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useToast } from '@chakra-ui/react';
 import webSocketService from '../services/websocket';
 import { addRealTimeComment, updateRealTimeComment, deleteRealTimeComment } from '../actions/comments';
+import { 
+  addRealTimeNotification, 
+  updateRealTimeNotification, 
+  updateUnreadNotificationCount 
+} from '../actions/notifications';
+import { updateUnreadReplies } from '../actions/postList';
 import { userSelector } from '../selectors';
 
-export const useWebSocket = (postId) => {
+export const useWebSocket = (postId, showToasts = false) => {
   const dispatch = useDispatch();
   const user = useSelector(userSelector);
+  const toast = useToast();
   const isConnected = useRef(false);
 
   useEffect(() => {
+    // Only connect if user is logged in
+    if (!user) {
+      return;
+    }
+
     // Always connect to WebSocket immediately when component mounts
     webSocketService.connect();
     isConnected.current = true;
@@ -22,7 +35,7 @@ export const useWebSocket = (postId) => {
       }, 100);
     }
 
-    // Set up event listeners
+    // Set up comment event listeners
     webSocketService.onNewComment((comment) => {
       console.log('Adding real-time comment:', comment);
       // Don't add the comment if it's from the current user (to avoid duplication)
@@ -41,14 +54,54 @@ export const useWebSocket = (postId) => {
       dispatch(deleteRealTimeComment(commentId));
     });
 
+    // Set up notification event listeners
+    webSocketService.onNewNotification((notification) => {
+      console.log('Received real-time notification:', notification);
+      dispatch(addRealTimeNotification(notification));
+      // Show toast only if showToasts is true
+      if (showToasts) {
+        let description = 'You have a new notification';
+        if (notification.type === 'mention') {
+          description = 'Someone mentioned you in a comment';
+        } else if (notification.type === 'reply') {
+          description = 'Someone replied to your comment';
+        }
+        toast({
+          title: 'New Notification',
+          description,
+          status: 'info',
+          duration: 2000,
+          isClosable: true,
+          position: 'top-right',
+        });
+      }
+    });
+
+    webSocketService.onNotificationUpdate((data) => {
+      console.log('Received notification update:', data);
+      dispatch(updateRealTimeNotification(data.notificationId, data.updates));
+    });
+
+    webSocketService.onUnreadNotificationCount((count) => {
+      console.log('Received unread notification count update:', count);
+      dispatch(updateUnreadNotificationCount(count));
+    });
+
+    // Set up unread replies event listeners
+    webSocketService.onUnreadRepliesUpdate((data) => {
+      console.log('Received unread replies update:', data);
+      dispatch(updateUnreadReplies(data.postId, data.unreadCount));
+    });
+
     // Cleanup function
     return () => {
       if (postId) {
         webSocketService.leavePost(postId);
       }
-      webSocketService.removeAllListeners();
+      // Don't remove all listeners since they might be needed by other components
+      // webSocketService.removeAllListeners();
     };
-  }, [dispatch, postId, user]);
+  }, [dispatch, postId, user, toast]);
 
   return webSocketService;
 }; 

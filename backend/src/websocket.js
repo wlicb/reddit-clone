@@ -33,7 +33,7 @@ const initializeWebSocket = (server) => {
 
     // Entered notification room
     socket.join(`user-${socket.userId}`);
-    // console.log(`User ${socket.userId} entered notification room`);
+    console.log(`User ${socket.userId} entered notification room`);
 
     // Join a post room to receive real-time updates for that post
     socket.on('join-post', (postId) => {
@@ -120,7 +120,7 @@ const emitNotificationUpdate = (userId, notificationId, updates) => {
 // Function to emit unread notification count update
 const emitUnreadNotificationCount = (userId, count) => {
   if (io) {
-    // console.log(userId, count)
+    console.log(`Emitting unread notification count update for user ${userId}: ${count}`)
     io.to(`user-${userId}`).emit('unread-notification-count', {
       type: 'unread-notification-count',
       count: count

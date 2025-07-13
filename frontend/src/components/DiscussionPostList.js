@@ -18,36 +18,20 @@ import {
 import DiscussionPost from './DiscussionPost';
 import { createLoadingAndErrorSelector, postListSelector, userSelector } from '../selectors';
 import { getPostList, updateUnreadReplies } from '../actions/postList';
-import webSocketService from '../services/websocket';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const DiscussionPostList = ({ user, isLoading, error, postList, getPostList, updateUnreadReplies }) => {
   const { subreddit } = useParams();
   const { colorMode } = useColorMode();
+
+  // Initialize WebSocket for notifications and unread replies without toast notifications
+  useWebSocket(null, false);
 
   useEffect(() => {
     if (user) {
       getPostList({ subreddit });
     }
   }, [getPostList, subreddit, user]);
-
-  // Set up WebSocket listeners for real-time unread replies updates
-  useEffect(() => {
-    if (user) {
-      // Connect to WebSocket
-      webSocketService.connect();
-      
-      // Listen for unread replies updates
-      webSocketService.onUnreadRepliesUpdate((data) => {
-        console.log('Received unread replies update:', data);
-        updateUnreadReplies(data.postId, data.unreadCount);
-      });
-
-      // Cleanup function
-      return () => {
-        webSocketService.removeAllListeners();
-      };
-    }
-  }, [user, updateUnreadReplies]);
 
   if (isLoading && user) {
     return (
