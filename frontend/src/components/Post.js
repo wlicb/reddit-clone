@@ -39,14 +39,14 @@ const Post = ({
   const deletedText = '[deleted]';
   return (
     <ThemedBox
-      p={4}
+      p={[3, 4]}
       borderRadius="md"
       width="100%"
       light="gray.50"
       dark="gray.700"
     >
-      <Flex>
-        <Box flexGrow={1}>
+      <Flex direction={['column', 'row']} gap={[2, 0]}>
+        <Box flexGrow={1} minW={0}>
           <Text
             as={Link}
             to={`/r/${subreddit}`}
@@ -75,6 +75,9 @@ const Post = ({
             mb={4}
             fontSize="1.5em"
             fontWeight="500"
+            wordBreak="break-word"
+            lineHeight="1.4"
+            minH="auto"
           >
             {title || deletedText}
           </Heading>
@@ -88,7 +91,7 @@ const Post = ({
                 subredditName={subreddit}
               />
             ) : (
-              <Box listStylePosition="inside">
+              <Box listStylePosition="inside" wordBreak="break-word" lineHeight="1.6">
                 <ChakraMarkdown>{body}</ChakraMarkdown>
               </Box>
             )
@@ -112,7 +115,7 @@ const Post = ({
           </Flex>
         </Box>
         {user && (user.username === author || user.isadmin === "true") && (
-          <HStack alignItems="flex-start">
+          <HStack alignItems="flex-start" justifySelf="flex-end">
             {isTextPost && !isEditing && user.username === author && (
               <IconButton
                 onClick={() => setIsEditing(true)}

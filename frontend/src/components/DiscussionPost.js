@@ -40,7 +40,7 @@ const DiscussionPost = ({
 
   return (
     <ThemedBox
-      p={6}
+      p={[4, 6]}
       borderRadius="lg"
       width="100%"
       light="white"
@@ -53,9 +53,9 @@ const DiscussionPost = ({
       }}
       transition="all 0.2s"
     >
-      <Flex gap={4}>
+      <Flex gap={[2, 4]} direction={['column', 'row']}>
         {/* Author Avatar and Info */}
-        <VStack spacing={2} align="center" minW="60px">
+        <VStack spacing={2} align="center" minW={['auto', '60px']}>
           <Avatar 
             size="md" 
             name={author || 'Anonymous'} 
@@ -73,7 +73,7 @@ const DiscussionPost = ({
         </VStack>
 
         {/* Main Content */}
-        <Box flexGrow={1}>
+        <Box flexGrow={1} minW={0}>
           {/* Topic Badge */}
           <HStack mb={3} spacing={2}>
             <Badge colorScheme="blue" variant="subtle" fontSize="xs">
@@ -98,6 +98,9 @@ const DiscussionPost = ({
             _hover={{ color: 'blue.500' }}
             mb={3}
             display="block"
+            wordBreak="break-word"
+            lineHeight="1.4"
+            minH="auto"
           >
             {title || deletedText}
             {!isTextPost && <ExternalLinkIcon ml={2} boxSize={3} />}
@@ -115,7 +118,7 @@ const DiscussionPost = ({
                 subredditName={subreddit}
               />
             ) : (
-                <Box>
+                <Box wordBreak="break-word" lineHeight="1.6">
                   <ChakraMarkdown>{body}</ChakraMarkdown>
                 </Box>
               )}
@@ -123,7 +126,7 @@ const DiscussionPost = ({
           )}
 
           {/* Discussion Stats */}
-          <Flex justify="space-between" align="center" mt={4}>
+          <Flex justify="space-between" align="center" mt={4} direction={['column', 'row']} gap={[3, 0]}>
             <HStack spacing={4}>
               <HStack spacing={1} color="gray.500">
                 <ChatIcon boxSize={4} />
@@ -136,7 +139,7 @@ const DiscussionPost = ({
             </HStack>
 
             {/* Action Buttons */}
-            <HStack spacing={2}>
+            <HStack spacing={2} justifySelf="flex-end">
               <Box
                 as={Link}
                 to={`/r/${subreddit}/comments/${id}`}

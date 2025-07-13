@@ -18,6 +18,7 @@ import {
   CircularProgress,
   Badge,
   IconButton,
+  Text,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, BellIcon } from '@chakra-ui/icons';
 import { ColorModeSwitcher } from '../ColorModeSwitcher';
@@ -65,7 +66,7 @@ const Navbar = ({
   return (
     <ThemedBox
       py={2}
-      px={[0, 0, 10, 10]}
+      px={[4, 6, 10, 10]}
       display="flex"
       justifyContent="flex-start"
       alignItems="center"
@@ -140,6 +141,7 @@ const Navbar = ({
             icon={<BellIcon />}
             variant="ghost"
             position="relative"
+            display={['none', 'flex']}
           >
             {unreadCount > 0 && (
               <Badge
@@ -165,9 +167,35 @@ const Navbar = ({
               {user.username}
             </MenuButton>
             <MenuList>
+              <MenuItem as={Link} to="/notifications" display={['flex', 'none']}>
+                <HStack spacing={2}>
+                  <BellIcon />
+                  <Text>Notifications</Text>
+                  {unreadCount > 0 && (
+                    <Badge
+                      colorScheme="red"
+                      variant="solid"
+                      borderRadius="full"
+                      fontSize="xs"
+                      minW="20px"
+                      h="20px"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
+                </HStack>
+              </MenuItem>
               {(user.isadmin === "true") && (<MenuItem as={Link} to="/subreddits/create">
                 Create subreddit
               </MenuItem>)}
+              {(user.isadmin === "true") && (
+                <MenuItem as={Link} to="/register">
+                  Register User
+                </MenuItem>
+              )}
               <MenuItem
                 onClick={async () => {
                   await startLogout();
@@ -177,8 +205,6 @@ const Navbar = ({
               </MenuItem>
             </MenuList>
           </Menu>
-          {(user.isadmin === "true") && (
-          <RegisterButton />)}
         </HStack>
       ) : (
         <HStack>
