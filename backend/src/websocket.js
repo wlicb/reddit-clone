@@ -81,9 +81,21 @@ const emitCommentDelete = (postId, commentId) => {
   }
 };
 
+// Function to emit unread replies update to all users
+const emitUnreadRepliesUpdate = (postId, unreadCount) => {
+  if (io) {
+    io.emit('unread-replies-update', {
+      type: 'unread-replies-update',
+      postId: postId,
+      unreadCount: unreadCount
+    });
+  }
+};
+
 module.exports = {
   initializeWebSocket,
   emitNewComment,
   emitCommentUpdate,
-  emitCommentDelete
+  emitCommentDelete,
+  emitUnreadRepliesUpdate
 }; 

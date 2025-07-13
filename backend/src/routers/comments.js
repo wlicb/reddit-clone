@@ -5,7 +5,7 @@ const auth = require('../middleware/auth')()
 const optionalAuth = require('../middleware/auth')(true)
 const adminAuth = require('../middleware/admin_auth')()
 const subredditAuth = require('../utils/subreddit_auth')
-const { emitNewComment, emitCommentUpdate, emitCommentDelete } = require('../websocket')
+const { emitNewComment, emitCommentUpdate, emitCommentDelete, emitUnreadRepliesUpdate } = require('../websocket')
 
 const router = express.Router()
 
@@ -187,8 +187,45 @@ router.post('/', auth, async (req, res) => {
     await logAction({ userId: req.user.id, action: 'add_comment', targetId: id, targetType: "comment", metadata: { body: body, post_id: post_id, parent_comment_id: parent_comment_id } });
     const { rows: [comment] } = await query(selectInsertedCommentStatement, [id])
     
+    // Mark the post as viewed for the comment author (they just wrote a comment, so they've "seen" it)
+    await query(
+      `INSERT INTO post_views (user_id, post_id, last_viewed_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (user_id, post_id)
+       DO UPDATE SET last_viewed_at = NOW()`,
+      [req.user.id, post_id]
+    );
+
     // Emit WebSocket event for new comment
     emitNewComment(post_id, comment)
+    
+    // Emit unread replies update to all users except the comment author
+    // Get the current unread count for all users except the comment author
+    const { rows: users } = await query(
+      `SELECT DISTINCT u.id 
+       FROM users u 
+       WHERE u.id != $1`, // Exclude the comment author
+      [req.user.id]
+    );
+    
+    for (const user of users) {
+      const { rows: [unreadCount] } = await query(
+        `SELECT COALESCE(
+          (SELECT cast(count(*) as int) 
+           FROM comments c 
+           LEFT JOIN post_views pv ON pv.post_id = c.post_id AND pv.user_id = $1
+           WHERE c.post_id = $2 
+             AND c.body IS NOT NULL 
+             AND c.created_at > COALESCE(pv.last_viewed_at, '1970-01-01'::timestamptz)
+          ), 0
+        ) as unread_count`,
+        [user.id, post_id]
+      );
+      
+      if (unreadCount && unreadCount.unread_count > 0) {
+        emitUnreadRepliesUpdate(post_id, unreadCount.unread_count);
+      }
+    }
     
     res.status(201).send(comment)
   } catch (e) {

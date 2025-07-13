@@ -26,3 +26,9 @@ export const getPostList = (filters) => async (dispatch) => {
     }
   }
 };
+
+export const updateUnreadReplies = (postId, unreadCount) => ({
+  type: 'UPDATE_UNREAD_REPLIES',
+  postId,
+  unreadCount,
+});

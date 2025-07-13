@@ -96,11 +96,21 @@ class WebSocketService {
     }
   }
 
+  onUnreadRepliesUpdate(callback) {
+    if (this.socket) {
+      this.socket.on('unread-replies-update', (data) => {
+        console.log('Received unread replies update:', data);
+        callback(data);
+      });
+    }
+  }
+
   removeAllListeners() {
     if (this.socket) {
       this.socket.off('new-comment');
       this.socket.off('comment-update');
       this.socket.off('comment-delete');
+      this.socket.off('unread-replies-update');
     }
   }
 }

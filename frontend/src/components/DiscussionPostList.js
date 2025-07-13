@@ -17,9 +17,10 @@ import {
 } from '@chakra-ui/react';
 import DiscussionPost from './DiscussionPost';
 import { createLoadingAndErrorSelector, postListSelector, userSelector } from '../selectors';
-import { getPostList } from '../actions/postList';
+import { getPostList, updateUnreadReplies } from '../actions/postList';
+import webSocketService from '../services/websocket';
 
-const DiscussionPostList = ({ user, isLoading, error, postList, getPostList }) => {
+const DiscussionPostList = ({ user, isLoading, error, postList, getPostList, updateUnreadReplies }) => {
   const { subreddit } = useParams();
   const { colorMode } = useColorMode();
 
@@ -28,6 +29,25 @@ const DiscussionPostList = ({ user, isLoading, error, postList, getPostList }) =
       getPostList({ subreddit });
     }
   }, [getPostList, subreddit, user]);
+
+  // Set up WebSocket listeners for real-time unread replies updates
+  useEffect(() => {
+    if (user) {
+      // Connect to WebSocket
+      webSocketService.connect();
+      
+      // Listen for unread replies updates
+      webSocketService.onUnreadRepliesUpdate((data) => {
+        console.log('Received unread replies update:', data);
+        updateUnreadReplies(data.postId, data.unreadCount);
+      });
+
+      // Cleanup function
+      return () => {
+        webSocketService.removeAllListeners();
+      };
+    }
+  }, [user, updateUnreadReplies]);
 
   if (isLoading && user) {
     return (
@@ -147,6 +167,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   getPostList: (filters) => dispatch(getPostList(filters)),
+  updateUnreadReplies: (postId, unreadCount) => dispatch(updateUnreadReplies(postId, unreadCount)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DiscussionPostList); 
