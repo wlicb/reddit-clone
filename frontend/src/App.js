@@ -20,7 +20,7 @@ function App() {
       <Router>
         <ThemedBox minHeight="100vh" light="gray.300" dark="gray.800">
           <Navbar />
-          <Flex justifyContent="center">
+          <Flex justifyContent="center" pt="80px">
             <Box width={['95%', '80%', '70%', '60%']} mb={10}>
               <Switch>
                 <PrivateRoute path="/r/:subreddit/comments/:id"

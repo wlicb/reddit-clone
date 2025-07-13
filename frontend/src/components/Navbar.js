@@ -69,7 +69,16 @@ const Navbar = ({
       display="flex"
       justifyContent="flex-start"
       alignItems="center"
-      mb={7}
+      position="fixed"
+      top={0}
+      left={0}
+      right={0}
+      zIndex={1000}
+      borderBottom="1px solid"
+      borderColor="gray.200"
+      _dark={{
+        borderColor: "gray.700"
+      }}
     >
       <Heading
         ml={[2, 4]}

@@ -21,6 +21,6 @@ app.use('/moderators', moderatorsRouter)
 app.use('/comments', commentsRouter)
 app.use('/notifications', notificationsRouter); 
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`App is listening on port ${port}`)
 })
