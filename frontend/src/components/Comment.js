@@ -10,6 +10,7 @@ import {
   Text,
   Tooltip,
   useColorMode,
+  Badge,
 } from '@chakra-ui/react';
 import { ChatIcon, EditIcon } from '@chakra-ui/icons';
 import ThemedBox from './ThemedBox';
@@ -25,6 +26,7 @@ const Comment = ({
   postId,
   createdAt,
   author,
+  author_isBot,
   user,
   subredditName,
 }) => {
@@ -47,14 +49,21 @@ const Comment = ({
     >
       <Flex>
         <Box flexGrow={1}>
-          <Text as="span" isTruncated>
-            {author === null ? deletedText : author}
-          </Text>{' '}
-          <Text as="span" color="gray.500">
-            <Tooltip label={moment(createdAt).format('LLLL')}>
-              {moment(createdAt).fromNow()}
-            </Tooltip>
-          </Text>
+          <HStack spacing={2} align="center">
+            <Text as="span" isTruncated>
+              {author === null ? deletedText : author}
+            </Text>
+            <Text as="span" color="gray.500">
+              <Tooltip label={moment(createdAt).format('LLLL')}>
+                {moment(createdAt).fromNow()}
+              </Tooltip>
+            </Text>
+            {author_isBot === "true" && (
+              <Badge size="xs" colorScheme="purple" variant="subtle">
+                BOT
+              </Badge>
+            )}
+          </HStack>
           {isEditing ? (
             <Box mt={7}>
                           <EditBoxWithMentions

@@ -29,6 +29,7 @@ const ChatComment = ({
   postId,
   createdAt,
   author,
+  author_isBot,
   user,
   parentComment,
   onHighlightComment,
@@ -144,6 +145,11 @@ const ChatComment = ({
             {isOwnMessage && (
               <Badge size="xs" colorScheme="blue" variant="subtle">
                 You
+              </Badge>
+            )}
+            {author_isBot === "true" && (
+              <Badge size="xs" colorScheme="purple" variant="subtle">
+                BOT
               </Badge>
             )}
           </HStack>

@@ -14,6 +14,7 @@ const selectPostStatement = `
   p.id, p.type, p.title, p.body, p.created_at, p.updated_at,
   (select cast(count(*) as int) from comments c where p.id = c.post_id and c.body is not null) number_of_comments,
   max(u.username) author_name,
+  max(u.isBot) author_isBot,
   max(sr.name) subreddit_name
   from posts p
   left join users u on p.author_id = u.id

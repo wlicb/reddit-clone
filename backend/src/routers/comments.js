@@ -9,17 +9,20 @@ const subredditAuth = require('../utils/subreddit_auth')
 const router = express.Router()
 
 const selectCommentStatement = `
-  select c.id, c.author_id, c.post_id, c.parent_comment_id, sr.name subreddit_name
+  select c.id, c.author_id, c.post_id, c.parent_comment_id, sr.name subreddit_name,
+         u.username author_name, u.isBot author_isBot
   from comments c
   inner join posts p on c.post_id = p.id
   inner join subreddits sr on p.subreddit_id = sr.id
+  left join users u on c.author_id = u.id
   where c.id = $1
 `
 
 const selectAllCommentsStatement = `
   select
   c.id, c.body, c.post_id, c.parent_comment_id, c.created_at, c.updated_at,
-  max(u.username) author_name
+  max(u.username) author_name,
+  max(u.isBot) author_isBot
   from comments c
   left join users u on c.author_id = u.id
   group by c.id

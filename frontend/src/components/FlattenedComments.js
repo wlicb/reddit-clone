@@ -178,6 +178,7 @@ const FlattenedComments = forwardRef(({ comments, subredditName }, ref) => {
               postId={comment.post_id}
               createdAt={comment.created_at}
               author={comment.author_name}
+              author_isBot={comment.author_isBot}
               subredditName={subredditName}
             />
           </Box>
