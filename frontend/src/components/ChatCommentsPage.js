@@ -68,6 +68,7 @@ const ChatCommentsPage = ({
   const { id } = useParams();
   const { colorMode } = useColorMode();
   const chatCommentsRef = useRef();
+  const processedHashRef = useRef(null);
   
   // Initialize WebSocket connection for real-time comments
   useWebSocket(id);
@@ -97,8 +98,12 @@ const ChatCommentsPage = ({
   // Handle notification-based scrolling and highlighting using URL hash
   useEffect(() => {
     if (window.location.hash && window.location.hash.startsWith('#comment-')) {
-      const commentId = parseInt(window.location.hash.replace('#comment-', ''));
-      if (commentId && chatCommentsRef.current && chatCommentsRef.current.scrollToNewComment) {
+      const currentHash = window.location.hash;
+      const commentId = parseInt(currentHash.replace('#comment-', ''));
+      
+      // Only process if this is a new hash we haven't processed yet
+      if (commentId && processedHashRef.current !== currentHash && chatCommentsRef.current && chatCommentsRef.current.scrollToNewComment) {
+        processedHashRef.current = currentHash;
         setTimeout(() => {
           chatCommentsRef.current.scrollToNewComment(commentId);
         }, 200);

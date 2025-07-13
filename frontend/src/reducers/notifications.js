@@ -4,7 +4,10 @@ import {
   FETCH_NOTIFICATIONS_FAILURE,
   MARK_NOTIFICATION_READ_REQUEST,
   MARK_NOTIFICATION_READ_SUCCESS,
-  MARK_NOTIFICATION_READ_FAILURE
+  MARK_NOTIFICATION_READ_FAILURE,
+  ADD_REAL_TIME_NOTIFICATION,
+  UPDATE_REAL_TIME_NOTIFICATION,
+  UPDATE_UNREAD_NOTIFICATION_COUNT
 } from '../actions/notifications';
 
 const initialState = {
@@ -59,6 +62,28 @@ const notificationsReducer = (state = initialState, action) => {
       return {
         ...state,
         markingRead: null
+      };
+    
+    case ADD_REAL_TIME_NOTIFICATION:
+      return {
+        ...state,
+        notifications: [action.payload, ...state.notifications]
+      };
+    
+    case UPDATE_REAL_TIME_NOTIFICATION:
+      return {
+        ...state,
+        notifications: state.notifications.map(notification =>
+          notification.id === action.payload.notificationId
+            ? { ...notification, ...action.payload.updates }
+            : notification
+        )
+      };
+    
+    case UPDATE_UNREAD_NOTIFICATION_COUNT:
+      return {
+        ...state,
+        unreadCount: action.payload
       };
     
     default:

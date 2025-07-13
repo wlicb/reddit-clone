@@ -105,12 +105,42 @@ class WebSocketService {
     }
   }
 
+  onNewNotification(callback) {
+    if (this.socket) {
+      this.socket.on('new-notification', (data) => {
+        console.log('Received new notification:', data);
+        callback(data.notification);
+      });
+    }
+  }
+
+  onNotificationUpdate(callback) {
+    if (this.socket) {
+      this.socket.on('notification-update', (data) => {
+        console.log('Received notification update:', data);
+        callback(data);
+      });
+    }
+  }
+
+  onUnreadNotificationCount(callback) {
+    if (this.socket) {
+      this.socket.on('unread-notification-count', (data) => {
+        console.log('Received unread notification count:', data);
+        callback(data.count);
+      });
+    }
+  }
+
   removeAllListeners() {
     if (this.socket) {
       this.socket.off('new-comment');
       this.socket.off('comment-update');
       this.socket.off('comment-delete');
       this.socket.off('unread-replies-update');
+      this.socket.off('new-notification');
+      this.socket.off('notification-update');
+      this.socket.off('unread-notification-count');
     }
   }
 }

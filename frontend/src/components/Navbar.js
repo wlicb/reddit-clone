@@ -31,6 +31,7 @@ import {
 import { startLogout } from '../actions/auth';
 import { getSubreddits } from '../actions/subreddits';
 import { getUnreadCount } from '../actions/notifications';
+import { useNotificationsWebSocket } from '../hooks/useNotificationsWebSocket';
 import RegisterButton from './RegisterButton';
 import LoginButton from './LoginButton';
 
@@ -39,29 +40,24 @@ const Navbar = ({
   subreddits,
   isLoading,
   error,
+  unreadCount,
   startLogout,
   getSubreddits,
   getUnreadCount,
 }) => {
   const location = useLocation();
   const subredditName = location.pathname.match(/r\/[^\/]+/);
-  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Initialize real-time notifications WebSocket
+  useNotificationsWebSocket();
 
   useEffect(() => {
     if (user) {
       getSubreddits();
-      // Fetch unread count
-      const fetchUnreadCount = async () => {
-        const count = await getUnreadCount();
-        setUnreadCount(count);
-      };
-      fetchUnreadCount();
-      
-      // Set up interval to check for new notifications
-      const interval = setInterval(fetchUnreadCount, 30000); // Check every 30 seconds
-      return () => clearInterval(interval);
+      // Fetch initial unread count
+      getUnreadCount();
     }
-  }, [user, getUnreadCount]);
+  }, [user, getSubreddits, getUnreadCount]);
 
   return (
     <ThemedBox
@@ -225,6 +221,7 @@ const mapStateToProps = (state) => ({
   error: errorSelector(state),
   subreddits: subredditsSelector(state),
   user: userSelector(state),
+  unreadCount: state.notifications.unreadCount || 0,
 });
 
 const mapDispatchToProps = (dispatch) => ({

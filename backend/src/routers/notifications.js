@@ -2,6 +2,7 @@ const express = require('express');
 const { query } = require('../db');
 const auth = require('../middleware/auth')();
 const adminAuth = require('../middleware/admin_auth')();
+const { emitNotificationUpdate, emitUnreadNotificationCount } = require('../websocket');
 
 const router = express.Router();
 
@@ -31,10 +32,30 @@ router.post('/read', auth, async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(400).send({ error: 'Must provide an array of notification ids' });
     }
+    
+    // Get the notifications before updating them
+    const { rows: notifications } = await query(
+      `SELECT * FROM notifications WHERE user_id = $1 AND id = ANY($2)`,
+      [req.user.id, ids]
+    );
+    
     await query(
       `UPDATE notifications SET read = TRUE WHERE user_id = $1 AND id = ANY($2)`,
       [req.user.id, ids]
     );
+    
+    // Emit WebSocket events for each updated notification
+    for (const notification of notifications) {
+      emitNotificationUpdate(req.user.id, notification.id, { read: true });
+    }
+    
+    // Update unread count
+    const { rows: [{ count }] } = await query(
+      `SELECT COUNT(*)::int AS count FROM notifications WHERE user_id = $1 AND read = FALSE`,
+      [req.user.id]
+    );
+    emitUnreadNotificationCount(req.user.id, count);
+    
     res.send({ success: true });
   } catch (e) {
     console.log(e)

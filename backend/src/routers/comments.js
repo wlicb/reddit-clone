@@ -5,7 +5,7 @@ const auth = require('../middleware/auth')()
 const optionalAuth = require('../middleware/auth')(true)
 const adminAuth = require('../middleware/admin_auth')()
 const subredditAuth = require('../utils/subreddit_auth')
-const { emitNewComment, emitCommentUpdate, emitCommentDelete, emitUnreadRepliesUpdate } = require('../websocket')
+const { emitNewComment, emitCommentUpdate, emitCommentDelete, emitUnreadRepliesUpdate, emitNewNotification, emitUnreadNotificationCount } = require('../websocket')
 
 const router = express.Router()
 
@@ -140,9 +140,10 @@ router.post('/', auth, async (req, res) => {
           );
           
           // Create mention notification
-          await query(
+          const { rows: [notification] } = await query(
             `INSERT INTO notifications (user_id, type, comment_id, post_id, created_at) 
-             VALUES ($1, $2, $3, $4,NOW())`,
+             VALUES ($1, $2, $3, $4, NOW())
+             RETURNING *`,
             [
               user.id,
               'mention',
@@ -150,6 +151,16 @@ router.post('/', auth, async (req, res) => {
               post_id
             ]
           );
+          
+          // Emit real-time notification
+          emitNewNotification(user.id, notification);
+          
+          // Update unread count for the user
+          const { rows: [{ count }] } = await query(
+            `SELECT COUNT(*)::int AS count FROM notifications WHERE user_id = $1 AND read = FALSE`,
+            [user.id]
+          );
+          emitUnreadNotificationCount(user.id, count);
         }
       }
     }
@@ -162,9 +173,10 @@ router.post('/', auth, async (req, res) => {
       );
       
       if (parentComment && parentComment.author_id !== req.user.id) {
-        await query(
+        const { rows: [notification] } = await query(
           `INSERT INTO notifications (user_id, type, comment_id, post_id, created_at) 
-           VALUES ($1, $2, $3, $4, NOW())`,
+           VALUES ($1, $2, $3, $4, NOW())
+           RETURNING *`,
           [
             parentComment.author_id,
             'reply',
@@ -172,6 +184,16 @@ router.post('/', auth, async (req, res) => {
             post_id
           ]
         );
+        
+        // Emit real-time notification
+        emitNewNotification(parentComment.author_id, notification);
+        
+        // Update unread count for the user
+        const { rows: [{ count }] } = await query(
+          `SELECT COUNT(*)::int AS count FROM notifications WHERE user_id = $1 AND read = FALSE`,
+          [parentComment.author_id]
+        );
+        emitUnreadNotificationCount(parentComment.author_id, count);
       }
     }
 
@@ -315,9 +337,10 @@ router.put('/:id', auth, async (req, res) => {
           );
           
           // Create mention notification
-          await query(
+          const { rows: [notification] } = await query(
             `INSERT INTO notifications (user_id, type, comment_id, post_id, created_at) 
-             VALUES ($1, $2, $3, $4, NOW())`,
+             VALUES ($1, $2, $3, $4, NOW())
+             RETURNING *`,
             [
               user.id,
               'mention',
@@ -325,6 +348,16 @@ router.put('/:id', auth, async (req, res) => {
               post_id
             ]
           );
+          
+          // Emit real-time notification
+          emitNewNotification(user.id, notification);
+          
+          // Update unread count for the user
+          const { rows: [{ count }] } = await query(
+            `SELECT COUNT(*)::int AS count FROM notifications WHERE user_id = $1 AND read = FALSE`,
+            [user.id]
+          );
+          emitUnreadNotificationCount(user.id, count);
         }
       }
     }

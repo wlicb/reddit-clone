@@ -16,6 +16,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchNotifications, markNotificationAsRead } from '../actions/notifications';
 import { useHistory } from 'react-router-dom';
 import { getPost } from '../actions/post';
+import { useNotificationsWebSocket } from '../hooks/useNotificationsWebSocket';
 
 const NotificationsPage = () => {
   const dispatch = useDispatch();
@@ -24,6 +25,9 @@ const NotificationsPage = () => {
   const { user } = useSelector(state => state.auth);
   const [navigating, setNavigating] = useState(null);
   const [isMounted, setIsMounted] = useState(true);
+
+  // Initialize real-time notifications WebSocket
+  useNotificationsWebSocket();
 
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const unreadBg = useColorModeValue('blue.50', 'blue.900');

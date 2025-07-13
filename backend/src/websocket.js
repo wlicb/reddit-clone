@@ -31,6 +31,10 @@ const initializeWebSocket = (server) => {
   io.on('connection', (socket) => {
     console.log(`User ${socket.userId} connected`);
 
+    // Entered notification room
+    socket.join(`user-${socket.userId}`);
+    console.log(`User ${socket.userId} entered notification room`);
+
     // Join a post room to receive real-time updates for that post
     socket.on('join-post', (postId) => {
       socket.join(`post-${postId}`);
@@ -92,10 +96,44 @@ const emitUnreadRepliesUpdate = (postId, unreadCount) => {
   }
 };
 
+// Function to emit new notification to a specific user
+const emitNewNotification = (userId, notification) => {
+  if (io) {
+    io.to(`user-${userId}`).emit('new-notification', {
+      type: 'new-notification',
+      notification: notification
+    });
+  }
+};
+
+// Function to emit notification update (e.g., when marked as read)
+const emitNotificationUpdate = (userId, notificationId, updates) => {
+  if (io) {
+    io.to(`user-${userId}`).emit('notification-update', {
+      type: 'notification-update',
+      notificationId: notificationId,
+      updates: updates
+    });
+  }
+};
+
+// Function to emit unread notification count update
+const emitUnreadNotificationCount = (userId, count) => {
+  if (io) {
+    io.to(`user-${userId}`).emit('unread-notification-count', {
+      type: 'unread-notification-count',
+      count: count
+    });
+  }
+};
+
 module.exports = {
   initializeWebSocket,
   emitNewComment,
   emitCommentUpdate,
   emitCommentDelete,
-  emitUnreadRepliesUpdate
+  emitUnreadRepliesUpdate,
+  emitNewNotification,
+  emitNotificationUpdate,
+  emitUnreadNotificationCount
 }; 

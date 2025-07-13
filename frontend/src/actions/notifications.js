@@ -9,6 +9,10 @@ export const MARK_NOTIFICATION_READ_REQUEST = 'MARK_NOTIFICATION_READ_REQUEST';
 export const MARK_NOTIFICATION_READ_SUCCESS = 'MARK_NOTIFICATION_READ_SUCCESS';
 export const MARK_NOTIFICATION_READ_FAILURE = 'MARK_NOTIFICATION_READ_FAILURE';
 
+export const ADD_REAL_TIME_NOTIFICATION = 'ADD_REAL_TIME_NOTIFICATION';
+export const UPDATE_REAL_TIME_NOTIFICATION = 'UPDATE_REAL_TIME_NOTIFICATION';
+export const UPDATE_UNREAD_NOTIFICATION_COUNT = 'UPDATE_UNREAD_NOTIFICATION_COUNT';
+
 // Action creators
 export const fetchNotifications = () => async (dispatch) => {
   dispatch({ type: FETCH_NOTIFICATIONS_REQUEST });
@@ -53,4 +57,20 @@ export const getUnreadCount = () => async (dispatch) => {
     console.error('Error fetching unread count:', error);
     return 0;
   }
-}; 
+};
+
+// Real-time notification actions
+export const addRealTimeNotification = (notification) => ({
+  type: ADD_REAL_TIME_NOTIFICATION,
+  payload: notification
+});
+
+export const updateRealTimeNotification = (notificationId, updates) => ({
+  type: UPDATE_REAL_TIME_NOTIFICATION,
+  payload: { notificationId, updates }
+});
+
+export const updateUnreadNotificationCount = (count) => ({
+  type: UPDATE_UNREAD_NOTIFICATION_COUNT,
+  payload: count
+}); 
