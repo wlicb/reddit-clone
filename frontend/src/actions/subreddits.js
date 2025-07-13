@@ -14,12 +14,19 @@ export const getSubreddits = () => async (dispatch) => {
     dispatch({ type: 'GET_SUBREDDITS_SUCCESS' });
     return response.data
   } catch (e) {
-    dispatch({
-      type: 'GET_SUBREDDITS_FAILURE',
-      message: e.message,
-      response: e.response,
-    });
-    return []
+    // Don't show authentication errors when user is not logged in
+    if (e.response?.status === 401) {
+      dispatch(setSubreddits([]));
+      dispatch({ type: 'GET_SUBREDDITS_SUCCESS' });
+      return []
+    } else {
+      dispatch({
+        type: 'GET_SUBREDDITS_FAILURE',
+        message: e.message,
+        response: e.response,
+      });
+      return []
+    }
   }
 };
 

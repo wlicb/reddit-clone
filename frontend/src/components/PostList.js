@@ -18,10 +18,12 @@ const PostList = ({ user, isLoading, error, postList, getPostList }) => {
   const { subreddit } = useParams();
 
   useEffect(() => {
-    getPostList({ subreddit });
-  }, [getPostList, subreddit]);
+    if (user) {
+      getPostList({ subreddit });
+    }
+  }, [getPostList, subreddit, user]);
 
-  if (isLoading) {
+  if (isLoading && user) {
     return (
       <Flex m={10} justifyContent="center" alignItems="center">
         <CircularProgress isIndeterminate />

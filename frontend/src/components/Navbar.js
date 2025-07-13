@@ -83,7 +83,7 @@ const Navbar = ({
     >
       <Heading
         ml={[2, 4]}
-        display={user ? 'block' : ['none', 'block']}
+        // display={['none', 'block']}
         fontSize={['1.3rem', '2.25rem']}
       >
         weddit

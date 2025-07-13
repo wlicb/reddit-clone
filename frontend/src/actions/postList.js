@@ -12,10 +12,16 @@ export const getPostList = (filters) => async (dispatch) => {
     dispatch(setPostList(response.data));
     dispatch({ type: 'GET_POST_LIST_SUCCESS' });
   } catch (e) {
-    dispatch({
-      type: 'GET_POST_LIST_FAILURE',
-      message: e.message,
-      response: e.response,
-    });
+    // Don't show authentication errors when user is not logged in
+    if (e.response?.status === 401) {
+      dispatch(setPostList([]));
+      dispatch({ type: 'GET_POST_LIST_SUCCESS' });
+    } else {
+      dispatch({
+        type: 'GET_POST_LIST_FAILURE',
+        message: e.message,
+        response: e.response,
+      });
+    }
   }
 };
