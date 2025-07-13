@@ -71,7 +71,7 @@ const ChatCommentsPage = ({
   const processedHashRef = useRef(null);
   
   // Initialize WebSocket connection for real-time comments
-  useWebSocket(id);
+  useWebSocket(id, false);
   
   useEffect(() => {
     getPostAndComments(id);

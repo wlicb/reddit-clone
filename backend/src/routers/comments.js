@@ -245,7 +245,7 @@ router.post('/', auth, async (req, res) => {
       );
       
       if (unreadCount && unreadCount.unread_count > 0) {
-        emitUnreadRepliesUpdate(post_id, unreadCount.unread_count);
+        emitUnreadRepliesUpdate(user.id, post_id, unreadCount.unread_count);
       }
     }
     

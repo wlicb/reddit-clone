@@ -85,10 +85,10 @@ const emitCommentDelete = (postId, commentId) => {
   }
 };
 
-// Function to emit unread replies update to all users
-const emitUnreadRepliesUpdate = (postId, unreadCount) => {
+// Function to emit unread replies update to a specific user
+const emitUnreadRepliesUpdate = (userId, postId, unreadCount) => {
   if (io) {
-    io.emit('unread-replies-update', {
+    io.to(`user-${userId}`).emit('unread-replies-update', {
       type: 'unread-replies-update',
       postId: postId,
       unreadCount: unreadCount
