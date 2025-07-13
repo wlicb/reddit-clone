@@ -22,6 +22,7 @@ import {
 } from '../selectors';
 import { getPostAndComments } from '../actions';
 import { HStack } from '@chakra-ui/react';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const getCommentsWithChildren = (comments) => {
   const commentsWithChildren = comments.map((comment) => ({
@@ -52,6 +53,10 @@ const CommentsPage = ({
   user,
 }) => {
   const { id } = useParams();
+  
+  // Initialize WebSocket connection for real-time comments
+  useWebSocket(id);
+  
   useEffect(() => {
     getPostAndComments(id);
   }, [getPostAndComments, id]);

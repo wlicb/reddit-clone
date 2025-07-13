@@ -31,6 +31,7 @@ import {
 import { getPostAndComments } from '../actions';
 import { clearNewCommentId } from '../actions/comments';
 import { HStack as ChakraHStack } from '@chakra-ui/react';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const getCommentsWithChildren = (comments) => {
   const commentsWithChildren = comments.map((comment) => ({
@@ -65,6 +66,9 @@ const ChatCommentsPage = ({
   const { id } = useParams();
   const { colorMode } = useColorMode();
   const chatCommentsRef = useRef();
+  
+  // Initialize WebSocket connection for real-time comments
+  useWebSocket(id);
   
   useEffect(() => {
     getPostAndComments(id);

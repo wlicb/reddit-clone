@@ -23,6 +23,30 @@ const commentsReducer = (state = { comments: [], newCommentId: null }, action) =
         newCommentId: action.newCommentId,
         comments: action.newComment ? [action.newComment, ...state.comments] : state.comments
       };
+    case 'ADD_REALTIME_COMMENT':
+      // Only add if the comment doesn't already exist
+      const commentExists = state.comments.some(comment => comment.id === action.comment.id);
+      if (!commentExists) {
+        return {
+          ...state,
+          comments: [...state.comments, action.comment]
+        };
+      }
+      return state;
+    case 'UPDATE_REALTIME_COMMENT':
+      return {
+        ...state,
+        comments: state.comments.map((comment) =>
+          comment.id === action.comment.id ? { ...comment, ...action.comment } : comment
+        )
+      };
+    case 'DELETE_REALTIME_COMMENT':
+      return {
+        ...state,
+        comments: state.comments.map((comment) =>
+          comment.id === action.commentId ? { ...comment, body: null, author_name: null } : comment
+        )
+      };
     case 'CLEAR_NEW_COMMENT_ID':
       return { ...state, newCommentId: null };
     default:

@@ -21,6 +21,21 @@ export const clearNewCommentId = () => ({
   type: 'CLEAR_NEW_COMMENT_ID',
 });
 
+export const addRealTimeComment = (comment) => ({
+  type: 'ADD_REALTIME_COMMENT',
+  comment,
+});
+
+export const updateRealTimeComment = (comment) => ({
+  type: 'UPDATE_REALTIME_COMMENT',
+  comment,
+});
+
+export const deleteRealTimeComment = (commentId) => ({
+  type: 'DELETE_REALTIME_COMMENT',
+  commentId,
+});
+
 export const submitComment = (commentDetails) => async (dispatch, getState) => {
   try {
     const { body, post_id, parent_comment_id } = commentDetails;

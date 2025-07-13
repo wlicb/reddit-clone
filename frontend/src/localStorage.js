@@ -17,3 +17,12 @@ export const loadState = (stateName) => {
     return undefined;
   }
 };
+
+export const getToken = () => {
+  try {
+    const authState = loadState('authState');
+    return authState?.token;
+  } catch {
+    return undefined;
+  }
+};

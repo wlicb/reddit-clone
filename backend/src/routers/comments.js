@@ -5,6 +5,7 @@ const auth = require('../middleware/auth')()
 const optionalAuth = require('../middleware/auth')(true)
 const adminAuth = require('../middleware/admin_auth')()
 const subredditAuth = require('../utils/subreddit_auth')
+const { emitNewComment, emitCommentUpdate, emitCommentDelete } = require('../websocket')
 
 const router = express.Router()
 
@@ -185,6 +186,10 @@ router.post('/', auth, async (req, res) => {
 
     await logAction({ userId: req.user.id, action: 'add_comment', targetId: id, targetType: "comment", metadata: { body: body, post_id: post_id, parent_comment_id: parent_comment_id } });
     const { rows: [comment] } = await query(selectInsertedCommentStatement, [id])
+    
+    // Emit WebSocket event for new comment
+    emitNewComment(post_id, comment)
+    
     res.status(201).send(comment)
   } catch (e) {
     res.status(400).send({ error: e.message })
@@ -291,6 +296,9 @@ router.put('/:id', auth, async (req, res) => {
 
     await logAction({ userId: req.user.id, action: 'edit_comment', targetId: id, targetType: "comment", metadata: { body: req.body.body } });
 
+    // Emit WebSocket event for comment update
+    emitCommentUpdate(post_id, updatedComment)
+
     res.send(updatedComment)
   } catch (e) {
     res.status(400).send({ error: e.message })
@@ -350,6 +358,9 @@ router.delete('/:id', auth, adminAuth, async (req, res) => {
     const { rows: [deletedComment] } = await query(setFieldsToNullStatement, [id])
 
     await logAction({ userId: req.user.id, action: 'delete_comment', targetId: id, targetType: "comment", metadata: { } });
+
+    // Emit WebSocket event for comment deletion
+    emitCommentDelete(post_id, id)
 
     res.send(deletedComment)
   } catch (e) {
