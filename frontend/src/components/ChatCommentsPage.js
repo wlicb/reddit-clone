@@ -158,7 +158,7 @@ const ChatCommentsPage = ({
           />
           <Box flexGrow={1}>
             <HStack spacing={2} align="center">
-              <Heading size="md" maxW="60%" color={colorMode === 'light' ? 'gray.800' : 'white'}>
+              <Heading size="md" maxW={["60%", "60%", "100%"]} color={colorMode === 'light' ? 'gray.800' : 'white'}>
                 {title}
               </Heading>
               <Badge colorScheme="blue" variant="subtle">
