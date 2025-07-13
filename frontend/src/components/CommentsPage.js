@@ -57,7 +57,7 @@ const CommentsPage = ({
   const { id } = useParams();
   
   // Initialize WebSocket connection for real-time comments
-  useWebSocket(id);
+  useWebSocket(id, false);
   
   useEffect(() => {
     getPostAndComments(id);

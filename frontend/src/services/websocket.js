@@ -136,6 +136,8 @@ class WebSocketService {
 
   onUnreadNotificationCount(callback) {
     if (this.socket) {
+      // Remove any existing listeners first to prevent duplicates
+      this.socket.off('unread-notification-count');
       this.socket.on('unread-notification-count', (data) => {
         console.log('Received unread notification count:', data);
         callback(data.count);

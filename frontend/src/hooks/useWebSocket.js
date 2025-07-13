@@ -11,6 +11,10 @@ import {
 import { updateUnreadReplies } from '../actions/postList';
 import { userSelector } from '../selectors';
 
+// Global flag to track if any component is showing toasts
+let globalToastShown = false;
+let lastNotificationId = null;
+
 export const useWebSocket = (postId, showToasts = false) => {
   const dispatch = useDispatch();
   const user = useSelector(userSelector);
@@ -58,8 +62,10 @@ export const useWebSocket = (postId, showToasts = false) => {
     webSocketService.onNewNotification((notification) => {
       console.log('Received real-time notification:', notification);
       dispatch(addRealTimeNotification(notification));
-      // Show toast only if showToasts is true
-      if (showToasts) {
+      // Show toast only if showToasts is true and we haven't shown this notification yet
+      if (showToasts && lastNotificationId !== notification.id && !globalToastShown) {
+        lastNotificationId = notification.id;
+        globalToastShown = true;
         let description = 'You have a new notification';
         if (notification.type === 'mention') {
           description = 'Someone mentioned you in a comment';
@@ -74,6 +80,11 @@ export const useWebSocket = (postId, showToasts = false) => {
           isClosable: true,
           position: 'top-right',
         });
+        
+        // Reset the flag after a short delay
+        setTimeout(() => {
+          globalToastShown = false;
+        }, 100);
       }
     });
 
