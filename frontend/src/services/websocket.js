@@ -80,12 +80,15 @@ class WebSocketService {
     }
   }
 
+  // --- NEW COMMENT EVENT LISTENER MANAGEMENT ---
   onNewComment(callback) {
     if (this.socket) {
-      this.socket.on('new-comment', (data) => {
-        console.log('Received new comment:', data);
-        callback(data.comment);
-      });
+      this.socket.on('new-comment', callback);
+    }
+  }
+  offNewComment(callback) {
+    if (this.socket) {
+      this.socket.off('new-comment', callback);
     }
   }
 
@@ -127,6 +130,8 @@ class WebSocketService {
 
   onNotificationUpdate(callback) {
     if (this.socket) {
+      // Remove any existing listeners first to prevent duplicates
+      this.socket.off('notification-update');
       this.socket.on('notification-update', (data) => {
         console.log('Received notification update:', data);
         callback(data);

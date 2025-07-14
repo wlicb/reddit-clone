@@ -39,15 +39,17 @@ export const useWebSocket = (postId, showToasts = false) => {
       }, 100);
     }
 
-    // Set up comment event listeners
-    webSocketService.onNewComment((comment) => {
-      console.log('Adding real-time comment:', comment);
+    // --- NEW COMMENT LISTENER (add/remove only this callback) ---
+    const handleNewComment = (data) => {
+      const comment = data.comment ? data.comment : data; // support both callback signatures
       // Don't add the comment if it's from the current user (to avoid duplication)
       if (!user || comment.author_name !== user.username) {
         dispatch(addRealTimeComment(comment));
       }
-    });
+    };
+    webSocketService.onNewComment(handleNewComment);
 
+    // Other listeners (not yet refactored)
     webSocketService.onCommentUpdate((comment) => {
       console.log('Updating real-time comment:', comment);
       dispatch(updateRealTimeComment(comment));
@@ -111,6 +113,7 @@ export const useWebSocket = (postId, showToasts = false) => {
       }
       // Don't remove all listeners since they might be needed by other components
       // webSocketService.removeAllListeners();
+      webSocketService.offNewComment(handleNewComment);
     };
   }, [dispatch, postId, user, toast]);
 
