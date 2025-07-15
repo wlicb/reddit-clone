@@ -6,6 +6,7 @@ const optionalAuth = require('../middleware/auth')(true)
 const adminAuth = require('../middleware/admin_auth')()
 const subredditAuth = require('../utils/subreddit_auth')
 const { emitNewComment, emitCommentUpdate, emitCommentDelete, emitUnreadRepliesUpdate, emitNewNotification, emitUnreadNotificationCount } = require('../websocket')
+const axios = require('axios');
 
 const router = express.Router()
 
@@ -220,6 +221,25 @@ router.post('/', auth, async (req, res) => {
 
     // Emit WebSocket event for new comment
     emitNewComment(post_id, comment)
+    
+    // Notify bots whose selectedsubreddit matches the post's subreddit
+    (async () => {
+      try {
+        const { rows: bots } = await query(
+          `SELECT bot_backend_url FROM users WHERE isBot = 'true' AND selectedSubreddit = $1 AND bot_backend_url IS NOT NULL AND bot_backend_url != ''`,
+          [post.subreddit_name]
+        );
+        for (const bot of bots) {
+          const url = bot.bot_backend_url.replace(/\/$/, '') + '/api/process_comment';
+          axios.post(url, { comment })
+            .catch(err => {
+              console.error('Failed to notify bot at', url, err.message);
+            });
+        }
+      } catch (err) {
+        console.error('Error querying bots for comment notification:', err.message);
+      }
+    })();
     
     // Emit unread replies update to all users except the comment author
     // Get the current unread count for all users except the comment author

@@ -4,7 +4,8 @@ create table users(
   password varchar(255) not null,
   tokens text[] default '{}',
   created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  updated_at timestamptz default now(),
+  bot_backend_url varchar(255) -- new field for bot backend URL
 );
 
 create table subreddits(
