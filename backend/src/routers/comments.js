@@ -222,24 +222,6 @@ router.post('/', auth, async (req, res) => {
     // Emit WebSocket event for new comment
     emitNewComment(post_id, comment)
     
-    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-    async function notifyBotWithRetry(url, comment, maxRetries = 5) {
-      let attempt = 0;
-      while (attempt < maxRetries) {
-        try {
-          await axios.post(url, { comment });
-          return;
-        } catch (err) {
-          attempt++;
-          if (attempt >= maxRetries) {
-            console.error(`Failed to notify bot at ${url} after ${maxRetries} attempts:`, err.message);
-            return;
-          }
-          await delay(1000 * attempt); // Exponential backoff: 1s, 2s, 3s, ...
-        }
-      }
-    }
     // Notify bots whose selectedsubreddit matches the post's subreddit
     (async () => {
       try {
@@ -249,7 +231,10 @@ router.post('/', auth, async (req, res) => {
         );
         for (const bot of bots) {
           const url = bot.bot_backend_url.replace(/\/$/, '') + '/api/process_comment';
-          notifyBotWithRetry(url, comment);
+          axios.post(url, { comment })
+            .catch(err => {
+              console.error('Failed to notify bot at', url, err.message);
+            });
         }
       } catch (err) {
         console.error('Error querying bots for comment notification:', err.message);
