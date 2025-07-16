@@ -30,8 +30,7 @@ class RegisterPage extends React.Component {
       isAdmin: false,
       isBot: false,
       selectedSubreddit: '',
-      availableSubreddits: [],
-      botBackendUrl: '' // new field
+      availableSubreddits: []
     };
 
     
@@ -59,24 +58,23 @@ class RegisterPage extends React.Component {
   handleSubmit = async (e) => {
     try {
       e.preventDefault();
-      const { username, password, confirmPassword, isAdmin, isBot, selectedSubreddit, botBackendUrl } = this.state;
-      console.log(botBackendUrl)
+      const { username, password, confirmPassword, isAdmin, isBot, selectedSubreddit } = this.state;
       const { startRegister, history, location } = this.props;
       if (password !== confirmPassword) {
         return this.setState({ doNotMatchError: 'Passwords do not match' });
       }
-      await startRegister(username, password, isAdmin.toString(), isBot.toString(), selectedSubreddit, botBackendUrl);
+      await startRegister(username, password, isAdmin.toString(), isBot.toString(), selectedSubreddit, this.state);
       const { error } = this.props;
       if (!error) {
         history.push(
           '/'
         );
       }
-    } catch (e) {console.log(e)}
+    } catch (e) {}
   };
 
   render() {
-    const { username, password, confirmPassword, doNotMatchError, isAdmin, isBot, selectedSubreddit, availableSubreddits, botBackendUrl } = this.state;
+    const { username, password, confirmPassword, doNotMatchError, isAdmin, isBot, selectedSubreddit, availableSubreddits } = this.state;
     const { isLoading, error } = this.props;
     return (
       <Box w={300} m="auto">
@@ -144,21 +142,6 @@ class RegisterPage extends React.Component {
                 Bot User
               </Checkbox>
             </FormControl>
-            {isBot && (
-              <FormControl>
-                <FormLabel htmlFor="bot-backend-url">Bot Backend URL</FormLabel>
-                <Input
-                  id="bot-backend-url"
-                  type="url"
-                  placeholder="https://your-bot-backend.com"
-                  value={botBackendUrl}
-                  onChange={(e) => this.setState({ botBackendUrl: e.target.value })}
-                  variant="filled"
-                  size="md"
-                  isRequired
-                />
-              </FormControl>
-            )}
 
             {!isAdmin && (
               <FormControl>
@@ -202,8 +185,8 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  startRegister: (username, password, isAdmin, isBot, selectedSubreddit, botBackendUrl) =>
-    dispatch(startRegister(username, password, isAdmin, isBot, selectedSubreddit, botBackendUrl)),
+  startRegister: (username, password, isAdmin, isBot, selectedSubreddit) =>
+    dispatch(startRegister(username, password, isAdmin, isBot, selectedSubreddit)),
   getSubreddits: () => dispatch(getSubreddits()),
 });
 

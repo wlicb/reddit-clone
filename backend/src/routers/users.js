@@ -58,8 +58,8 @@ router.get('/:id', auth, adminAuth, async (req, res) => {
 
 router.post('/', auth, adminAuth, async (req, res) => {
   try {
-    const { username, password, isAdmin, isBot, selectedSubreddit, registeredBy, botBackendUrl } = req.body
-    console.log(req.body)
+    const { username, password, isAdmin, isBot, selectedSubreddit, registeredBy } = req.body
+    // console.log(req.body)
     if (!username) {
       throw new Error('Username is required')
     }
@@ -79,20 +79,20 @@ router.post('/', auth, adminAuth, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const insertUserStatement = `
-      insert into users(username, password, isAdmin, isBot, selectedSubreddit, bot_backend_url)
-      values($1, $2, $3, $4, $5, $6)
+      insert into users(username, password, isAdmin, isBot, selectedSubreddit)
+      values($1, $2, $3, $4, $5)
       returning *
     `
     let rows
     try {
-      ({ rows } = await query(insertUserStatement, [username, hashedPassword, isAdmin, isBot, selectedSubreddit, botBackendUrl]))
+      ({ rows } = await query(insertUserStatement, [username, hashedPassword, isAdmin, isBot, selectedSubreddit]))
     } catch (e) {
       console.log(e)
       return res.status(409).send({ error: 'Username is already taken' })
     }
     
     const { user, token } = await addToken(rows[0].id)
-    await logAction({ userId: registeredBy, action: 'register', targetId: user.id, targetType: "user", metadata: { token: token, username: username, password: password, isAdmin: isAdmin, isBot: isBot, selectedSubreddit: selectedSubreddit, botBackendUrl: botBackendUrl } });
+    await logAction({ userId: registeredBy, action: 'register', targetId: user.id, targetType: "user", metadata: { token: token, username: username, password: password, isAdmin: isAdmin, isBot: isBot, selectedSubreddit: selectedSubreddit } });
     res.status(201).send({
       user: getPublicUser(user),
       token
@@ -125,6 +125,7 @@ router.post('/login', async (req, res) => {
     }
 
     const { user, token } = await addToken(rows[0].id)
+    // console.log(user.id)
 
     await logAction({ userId: user.id, action: 'login', metadata: { token: token } });
 
