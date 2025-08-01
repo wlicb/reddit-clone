@@ -90,7 +90,7 @@ const Navbar = ({
             <MenuButton mx={2} as={Button} rightIcon={<ChevronDownIcon />}>
               {subredditName || 'Home'}
             </MenuButton>
-            <MenuList>
+            <MenuList maxH="300px" overflowY="auto">
               <MenuItem as={Link} to="/">
                 Home
               </MenuItem>
