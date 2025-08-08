@@ -60,11 +60,12 @@ export const useWebSocket = (postId, showToasts = false) => {
       dispatch(deleteRealTimeComment(commentId));
     });
 
-    webSocketService.onCommentLikeUpdate((data) => {
+    const handleCommentLikeUpdate = (data) => {
       console.log('Received comment like update:', data);
       // Only update the like count, keep the current user's like status unchanged
       dispatch(updateCommentLike(data.commentId, data.likeCount, null));
-    });
+    };  
+    webSocketService.onCommentLikeUpdate(handleCommentLikeUpdate);
 
     // Set up notification event listeners
     webSocketService.onNewNotification((notification) => {
@@ -120,6 +121,7 @@ export const useWebSocket = (postId, showToasts = false) => {
       // Don't remove all listeners since they might be needed by other components
       // webSocketService.removeAllListeners();
       webSocketService.offNewComment(handleNewComment);
+      webSocketService.offCommentLikeUpdate(handleCommentLikeUpdate);
     };
   }, [dispatch, postId, user, toast]);
 

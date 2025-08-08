@@ -50,13 +50,13 @@ const ChatComment = ({
   const currentIsLiked = isLiked || false;
   
   // Debug logging
-  console.log(`ChatComment ${id} - Current values:`, {
-    likeCount,
-    isLiked,
-    currentLikeCount,
-    currentIsLiked,
-    type: typeof currentLikeCount
-  });
+  // console.log(`ChatComment ${id} - Current values:`, {
+  //   likeCount,
+  //   isLiked,
+  //   currentLikeCount,
+  //   currentIsLiked,
+  //   type: typeof currentLikeCount
+  // });
   const history = useHistory();
   const location = useLocation();
   const deletedText = '[deleted]';

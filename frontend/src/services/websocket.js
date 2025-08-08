@@ -119,6 +119,12 @@ class WebSocketService {
     }
   }
 
+  offCommentLikeUpdate(callback) {
+    if (this.socket) {
+      this.socket.off('comment-like-update', callback);
+    }
+  }
+
   onUnreadRepliesUpdate(callback) {
     if (this.socket) {
       this.socket.on('unread-replies-update', (data) => {
