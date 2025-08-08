@@ -70,12 +70,47 @@ const ChatCommentsPage = ({
   const chatCommentsRef = useRef();
   const processedHashRef = useRef(null);
   
+  // Helper function to safely scroll to a comment with retry mechanism
+  const safeScrollToComment = (commentId, retryCount = 0) => {
+    try {
+      if (chatCommentsRef.current && chatCommentsRef.current.scrollToNewComment) {
+        console.log('Scrolling to comment:', commentId);
+        chatCommentsRef.current.scrollToNewComment(commentId);
+        return true;
+      } else if (retryCount < 5) {
+        console.log(`Ref not available, retrying... (attempt ${retryCount + 1})`);
+        // Retry after a short delay if ref is not available yet
+        setTimeout(() => {
+          safeScrollToComment(commentId, retryCount + 1);
+        }, 50);
+      } else {
+        console.warn('Failed to scroll to comment after 5 retries:', commentId);
+      }
+    } catch (error) {
+      console.warn('Failed to scroll to comment:', error);
+    }
+    return false;
+  };
+  
   // Initialize WebSocket connection for real-time comments
   useWebSocket(id, false);
   
   useEffect(() => {
     getPostAndComments(id);
   }, [getPostAndComments, id]);
+
+  // Ensure ref is properly initialized
+  useEffect(() => {
+    // Reset processed hash when component mounts to allow re-processing
+    processedHashRef.current = null;
+  }, []);
+
+  // Debug ref availability
+  useEffect(() => {
+    if (chatCommentsRef.current) {
+      console.log('ChatCommentsRef is now available');
+    }
+  }, [chatCommentsRef.current]);
 
   useEffect(() => {
     if (post && post.id && user) {
@@ -85,31 +120,32 @@ const ChatCommentsPage = ({
 
   // Handle new comment highlighting and scrolling
   useEffect(() => {
-    if (newCommentId && chatCommentsRef.current && chatCommentsRef.current.scrollToNewComment) {
+    if (newCommentId && !isLoading && comments.length > 0) {
       // Wait a bit for the comment to be rendered
       setTimeout(() => {
-        chatCommentsRef.current.scrollToNewComment(newCommentId);
-        // Clear the newCommentId after using it
-        clearNewCommentId();
+        if (safeScrollToComment(newCommentId)) {
+          // Clear the newCommentId after using it
+          clearNewCommentId();
+        }
       }, 100);
     }
-  }, [newCommentId, clearNewCommentId]);
+  }, [newCommentId, clearNewCommentId, isLoading, comments]);
 
   // Handle notification-based scrolling and highlighting using URL hash
   useEffect(() => {
-    if (window.location.hash && window.location.hash.startsWith('#comment-')) {
+    if (window.location.hash && window.location.hash.startsWith('#comment-') && !isLoading && comments.length > 0) {
       const currentHash = window.location.hash;
       const commentId = parseInt(currentHash.replace('#comment-', ''));
       
       // Only process if this is a new hash we haven't processed yet
-      if (commentId && processedHashRef.current !== currentHash && chatCommentsRef.current && chatCommentsRef.current.scrollToNewComment) {
+      if (commentId && processedHashRef.current !== currentHash) {
         processedHashRef.current = currentHash;
         setTimeout(() => {
-          chatCommentsRef.current.scrollToNewComment(commentId);
+          safeScrollToComment(commentId);
         }, 200);
       }
     }
-  }, [comments]); // Re-run when comments change to ensure they're loaded
+  }, [comments, isLoading]); // Re-run when comments change to ensure they're loaded
 
   if (isLoading) {
     return (
