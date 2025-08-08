@@ -5,7 +5,7 @@ const auth = require('../middleware/auth')()
 const optionalAuth = require('../middleware/auth')(true)
 const adminAuth = require('../middleware/admin_auth')()
 const subredditAuth = require('../utils/subreddit_auth')
-const { emitNewComment, emitCommentUpdate, emitCommentDelete, emitUnreadRepliesUpdate, emitNewNotification, emitUnreadNotificationCount } = require('../websocket')
+const { emitNewComment, emitCommentUpdate, emitCommentDelete, emitUnreadRepliesUpdate, emitNewNotification, emitUnreadNotificationCount, emitCommentLikeUpdate } = require('../websocket')
 
 const router = express.Router()
 
@@ -23,10 +23,22 @@ const selectAllCommentsStatement = `
   select
   c.id, c.body, c.post_id, c.parent_comment_id, c.created_at, c.updated_at,
   max(u.username) author_name,
-  max(u.isBot) author_isBot
+  max(u.isBot) author_isBot,
+  COALESCE(like_counts.like_count, 0)::int as like_count,
+  CASE WHEN user_likes.user_id IS NOT NULL THEN true ELSE false END as is_liked
   from comments c
   left join users u on c.author_id = u.id
-  group by c.id
+  left join (
+    select comment_id, count(*)::int as like_count
+    from comment_likes
+    group by comment_id
+  ) like_counts on c.id = like_counts.comment_id
+  left join (
+    select comment_id, user_id
+    from comment_likes
+    where user_id = $1
+  ) user_likes on c.id = user_likes.comment_id
+  group by c.id, like_counts.like_count, user_likes.user_id
 `
 
 const selectPostStatement = `
@@ -44,8 +56,8 @@ const selectPostStatement = `
 
 router.get('/', auth, adminAuth, async (req, res) => {
   try {
-    const selectCommentsStatement = `select * from comments`
-    const { rows } = await query(selectCommentsStatement)
+    const selectAllCommentsAdminStatement = `select * from comments`
+    const { rows } = await query(selectAllCommentsAdminStatement)
     res.send(rows)
   } catch (e) {
     res.status(500).send({ error: e.message })
@@ -58,10 +70,10 @@ router.get('/:post_id', auth, async (req, res) => {
 
     const selectCommentsStatement = `
       ${selectAllCommentsStatement}
-      having c.post_id = $1
+      having c.post_id = $2
     `
     const { rows: [post] } = await query(selectPostStatement, [post_id])
-    const { rows: comments } = await query(selectCommentsStatement, [post_id])
+    const { rows: comments } = await query(selectCommentsStatement, [req.user.id, post_id])
 
 
     if (!post) {
@@ -81,6 +93,7 @@ router.get('/:post_id', auth, async (req, res) => {
 
     res.send({ post, comments })
   } catch (e) {
+    console.error(e)
     res.status(500).send({ error: e.message })
   }
 })
@@ -433,6 +446,112 @@ router.delete('/:id', auth, adminAuth, async (req, res) => {
     emitCommentDelete(post_id, id)
 
     res.send(deletedComment)
+  } catch (e) {
+    res.status(400).send({ error: e.message })
+  }
+})
+
+// Like a comment
+router.post('/:id/like', auth, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { rows: [comment] } = await query(selectCommentStatement, [id])
+    
+    if (!comment) {
+      return res.status(404).send({ error: 'Could not find comment with that id' })
+    }
+
+    // Check if user already liked this comment
+    const { rows: [existingLike] } = await query(
+      'SELECT * FROM comment_likes WHERE user_id = $1 AND comment_id = $2',
+      [req.user.id, id]
+    )
+
+    if (existingLike) {
+      return res.status(400).send({ error: 'Comment already liked by this user' })
+    }
+
+    // Add like
+    const { rows: [newLike] } = await query(
+      'INSERT INTO comment_likes (user_id, comment_id) VALUES ($1, $2) RETURNING *',
+      [req.user.id, id]
+    )
+
+    // Get updated like count
+    const { rows: [{ like_count }] } = await query(
+      'SELECT COALESCE(COUNT(*), 0)::int as like_count FROM comment_likes WHERE comment_id = $1',
+      [id]
+    )
+
+    await logAction({ 
+      userId: req.user.id, 
+      action: 'like_comment', 
+      targetId: id, 
+      targetType: "comment", 
+      metadata: { like_count } 
+    });
+
+    // Emit WebSocket event for like update
+    emitCommentLikeUpdate(comment.post_id, id, like_count)
+
+    res.send({ 
+      success: true, 
+      like_count, 
+      is_liked: true 
+    })
+  } catch (e) {
+    res.status(400).send({ error: e.message })
+  }
+})
+
+// Unlike a comment
+router.delete('/:id/like', auth, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { rows: [comment] } = await query(selectCommentStatement, [id])
+    
+    if (!comment) {
+      return res.status(404).send({ error: 'Could not find comment with that id' })
+    }
+
+    // Check if user liked this comment
+    const { rows: [existingLike] } = await query(
+      'SELECT * FROM comment_likes WHERE user_id = $1 AND comment_id = $2',
+      [req.user.id, id]
+    )
+
+    if (!existingLike) {
+      return res.status(400).send({ error: 'Comment not liked by this user' })
+    }
+
+    // Remove like
+    await query(
+      'DELETE FROM comment_likes WHERE user_id = $1 AND comment_id = $2',
+      [req.user.id, id]
+    )
+
+    // Get updated like count
+    const { rows: [{ like_count }] } = await query(
+      'SELECT COALESCE(COUNT(*), 0)::int as like_count FROM comment_likes WHERE comment_id = $1',
+      [id]
+    )
+
+    await logAction({ 
+      userId: req.user.id, 
+      action: 'unlike_comment', 
+      targetId: id, 
+      targetType: "comment", 
+      metadata: { like_count } 
+      });
+
+    // Emit WebSocket event for like update
+    emitCommentLikeUpdate(comment.post_id, id, like_count)
+
+    res.send({ 
+      success: true, 
+      like_count, 
+      is_liked: false 
+    })
   } catch (e) {
     res.status(400).send({ error: e.message })
   }

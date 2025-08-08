@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from '@chakra-ui/react';
 import webSocketService from '../services/websocket';
-import { addRealTimeComment, updateRealTimeComment, deleteRealTimeComment } from '../actions/comments';
+import { addRealTimeComment, updateRealTimeComment, deleteRealTimeComment, updateCommentLike } from '../actions/comments';
 import { 
   addRealTimeNotification, 
   updateRealTimeNotification, 
@@ -58,6 +58,12 @@ export const useWebSocket = (postId, showToasts = false) => {
     webSocketService.onCommentDelete((commentId) => {
       console.log('Deleting real-time comment:', commentId);
       dispatch(deleteRealTimeComment(commentId));
+    });
+
+    webSocketService.onCommentLikeUpdate((data) => {
+      console.log('Received comment like update:', data);
+      // Only update the like count, keep the current user's like status unchanged
+      dispatch(updateCommentLike(data.commentId, data.likeCount, null));
     });
 
     // Set up notification event listeners

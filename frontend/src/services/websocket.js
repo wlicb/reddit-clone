@@ -110,6 +110,15 @@ class WebSocketService {
     }
   }
 
+  onCommentLikeUpdate(callback) {
+    if (this.socket) {
+      this.socket.on('comment-like-update', (data) => {
+        console.log('Received comment like update:', data);
+        callback(data);
+      });
+    }
+  }
+
   onUnreadRepliesUpdate(callback) {
     if (this.socket) {
       this.socket.on('unread-replies-update', (data) => {
@@ -155,6 +164,7 @@ class WebSocketService {
       this.socket.off('new-comment');
       this.socket.off('comment-update');
       this.socket.off('comment-delete');
+      this.socket.off('comment-like-update');
       this.socket.off('unread-replies-update');
       this.socket.off('new-notification');
       this.socket.off('notification-update');

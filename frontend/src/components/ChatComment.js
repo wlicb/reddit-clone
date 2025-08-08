@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import moment from 'moment';
+import { likeComment, unlikeComment } from '../actions/comments';
 import {
   Box,
   Flex,
@@ -16,6 +17,8 @@ import {
 } from '@chakra-ui/react';
 import EditIcon from '@mui/icons-material/Edit';
 import ReplyIcon from '@mui/icons-material/Reply';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import ThemedBox from './ThemedBox';
 import WriteCommentBoxWithMentions from './WriteCommentBoxWithMentions';
 import EditBoxWithMentions from './EditBoxWithMentions';
@@ -34,14 +37,53 @@ const ChatComment = ({
   parentComment,
   onHighlightComment,
   subredditName,
+  likeCount,
+  isLiked,
+  likeComment,
+  unlikeComment,
 }) => {
   const { colorMode } = useColorMode();
   const [showWriteReply, setShowWriteReply] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  // Use Redux state for likes
+  const currentLikeCount = likeCount || 0;
+  const currentIsLiked = isLiked || false;
+  
+  // Debug logging
+  console.log(`ChatComment ${id} - Current values:`, {
+    likeCount,
+    isLiked,
+    currentLikeCount,
+    currentIsLiked,
+    type: typeof currentLikeCount
+  });
   const history = useHistory();
   const location = useLocation();
   const deletedText = '[deleted]';
   const isOwnMessage = user && user.username === author;
+
+  const handleLikeClick = async () => {
+    if (!user) {
+      history.push({
+        pathname: '/login',
+        state: {
+          requireAuth: 'Log in to like messages',
+          prevPathname: location.pathname,
+        },
+      });
+      return;
+    }
+
+    try {
+      if (currentIsLiked) {
+        await unlikeComment(id);
+      } else {
+        await likeComment(id);
+      }
+    } catch (error) {
+      console.error('Error updating like:', error);
+    }
+  };
 
   return (
     <Box mb={3} data-comment-id={id}>
@@ -190,6 +232,19 @@ const ChatComment = ({
           {/* Message Actions */}
           <HStack spacing={2} mt={2} ml={1}>
             
+            <HStack spacing={1}>
+              <IconButton
+                size="sm"
+                variant="ghost"
+                icon={currentIsLiked ? <ThumbUpIcon /> : <ThumbUpOutlinedIcon />}
+                onClick={handleLikeClick}
+                aria-label="Like message"
+              />
+              <Text fontSize="xs" fontWeight="medium">
+                {currentLikeCount}
+              </Text>
+            </HStack>
+
             <IconButton
               size="sm"
               variant="ghost"
@@ -251,8 +306,22 @@ const ChatComment = ({
   );
 };
 
-const mapStateToProps = (state) => ({
-  user: userSelector(state),
-});
+const mapStateToProps = (state, ownProps) => {
+  // Get the comment from Redux state to get the latest like data
+  const comments = state.comments.comments;
+  const comment = comments.find(c => parseInt(c.id) === parseInt(ownProps.id));
+  
+  return {
+    user: userSelector(state),
+    // Use Redux state for likes if available, otherwise fall back to props
+    likeCount: comment ? comment.like_count : ownProps.likeCount,
+    isLiked: comment ? comment.is_liked : ownProps.isLiked,
+  };
+};
 
-export default connect(mapStateToProps)(ChatComment); 
+const mapDispatchToProps = {
+  likeComment,
+  unlikeComment,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ChatComment); 

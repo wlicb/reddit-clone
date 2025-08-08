@@ -128,6 +128,17 @@ const emitUnreadNotificationCount = (userId, count) => {
   }
 };
 
+// Function to emit comment like update to all users viewing that post
+const emitCommentLikeUpdate = (postId, commentId, likeCount) => {
+  if (io) {
+    io.to(`post-${postId}`).emit('comment-like-update', {
+      type: 'comment-like-update',
+      commentId: commentId,
+      likeCount: likeCount
+    });
+  }
+};
+
 module.exports = {
   initializeWebSocket,
   emitNewComment,
@@ -136,5 +147,6 @@ module.exports = {
   emitUnreadRepliesUpdate,
   emitNewNotification,
   emitNotificationUpdate,
-  emitUnreadNotificationCount
+  emitUnreadNotificationCount,
+  emitCommentLikeUpdate
 }; 

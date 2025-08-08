@@ -52,6 +52,50 @@ const commentsReducer = (state = { comments: [], newCommentId: null }, action) =
       return result;
     case 'CLEAR_NEW_COMMENT_ID':
       return { ...state, newCommentId: null };
+    case 'LIKE_COMMENT_SUCCESS':
+      return {
+        ...state,
+        comments: state.comments.map((comment) =>
+          parseInt(comment.id) === parseInt(action.commentId)
+            ? { ...comment, like_count: parseInt(action.likeCount) || 0, is_liked: action.isLiked }
+            : comment
+        )
+      };
+    case 'UNLIKE_COMMENT_SUCCESS':
+      return {
+        ...state,
+        comments: state.comments.map((comment) =>
+          parseInt(comment.id) === parseInt(action.commentId)
+            ? { ...comment, like_count: parseInt(action.likeCount) || 0, is_liked: action.isLiked }
+            : comment
+        )
+      };
+    case 'UPDATE_COMMENT_LIKE':
+      console.log('UPDATE_COMMENT_LIKE reducer called with:', {
+        commentId: action.commentId,
+        likeCount: action.likeCount,
+        isLiked: action.isLiked,
+        existingComments: state.comments.map(c => ({ id: c.id, like_count: c.like_count }))
+      });
+      return {
+        ...state,
+        comments: state.comments.map((comment) => {
+          // Convert both to numbers for comparison to handle string/number mismatch
+          if (parseInt(comment.id) === parseInt(action.commentId)) {
+            console.log('Found matching comment:', comment.id, 'updating like_count to:', action.likeCount);
+            const updates = {
+              ...comment,
+              like_count: parseInt(action.likeCount) || 0, // Ensure it's a number
+            };
+            // Only update is_liked if it's not null (preserve current user's status)
+            if (action.isLiked !== null) {
+              updates.is_liked = action.isLiked;
+            }
+            return updates;
+          }
+          return comment;
+        })
+      };
     default:
       return state;
   }

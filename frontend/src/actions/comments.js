@@ -56,3 +56,54 @@ export const submitComment = (commentDetails) => async (dispatch, getState) => {
     throw e;
   }
 };
+
+export const likeComment = (commentId) => async (dispatch) => {
+  try {
+    dispatch({ type: 'LIKE_COMMENT_REQUEST', commentId });
+    const response = await axios.post(`/comments/${commentId}/like`);
+    dispatch({ 
+      type: 'LIKE_COMMENT_SUCCESS', 
+      commentId, 
+      likeCount: response.data.like_count,
+      isLiked: response.data.is_liked 
+    });
+    return response.data;
+  } catch (e) {
+    dispatch({
+      type: 'LIKE_COMMENT_FAILURE',
+      commentId,
+      message: e.message,
+      response: e.response,
+    });
+    throw e;
+  }
+};
+
+export const unlikeComment = (commentId) => async (dispatch) => {
+  try {
+    dispatch({ type: 'UNLIKE_COMMENT_REQUEST', commentId });
+    const response = await axios.delete(`/comments/${commentId}/like`);
+    dispatch({ 
+      type: 'UNLIKE_COMMENT_SUCCESS', 
+      commentId, 
+      likeCount: response.data.like_count,
+      isLiked: response.data.is_liked 
+    });
+    return response.data;
+  } catch (e) {
+    dispatch({
+      type: 'UNLIKE_COMMENT_FAILURE',
+      commentId,
+      message: e.message,
+      response: e.response,
+    });
+    throw e;
+  }
+};
+
+export const updateCommentLike = (commentId, likeCount, isLiked) => ({
+  type: 'UPDATE_COMMENT_LIKE',
+  commentId,
+  likeCount,
+  isLiked,
+});
