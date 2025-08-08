@@ -1,17 +1,26 @@
-import { loadState } from '../localStorage';
+import { loadState, saveState } from '../localStorage';
 
 const initialState = loadState('authState') || {};
 
 const authReducer = (state = initialState, action) => {
+  let newState;
+  
   switch (action.type) {
     case 'LOGIN':
       const { user, token } = action;
-      return { user, token };
+      newState = { user, token };
+      break;
     case 'LOGOUT':
-      return {};
+      newState = {};
+      break;
     default:
-      return state;
+      newState = state;
   }
+  
+  // Save state to localStorage after each action
+  saveState(newState, 'authState');
+  
+  return newState;
 };
 
 export default authReducer;
