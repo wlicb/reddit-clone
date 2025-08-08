@@ -298,8 +298,9 @@ router.put('/:id', auth, async (req, res) => {
 
 
     if ((comment.author_id !== req.user.id)
-        && (await userIsModerator(req.user.username, comment.subreddit_name) === false)) {
-      return res.status(403).send({ error: 'You must be the comment author to edit it' })
+        && (await userIsModerator(req.user.username, comment.subreddit_name) === false)
+        && req.user.isadmin !== "true") {
+      return res.status(403).send({ error: 'You must be the comment author or an admin to edit it' })
     }
 
     // Get the old comment body to compare mentions

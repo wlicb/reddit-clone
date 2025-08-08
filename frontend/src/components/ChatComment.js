@@ -266,7 +266,7 @@ const ChatComment = ({
             />
 
             <HStack spacing={1}>
-              {user && !isEditing && user.username === author && (
+              {user && !isEditing && (user.username === author || user.isadmin === "true") && (
                 <IconButton
                   size="sm"
                   variant="ghost"
