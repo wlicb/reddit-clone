@@ -71,12 +71,12 @@ const commentsReducer = (state = { comments: [], newCommentId: null }, action) =
         )
       };
     case 'UPDATE_COMMENT_LIKE':
-      console.log('UPDATE_COMMENT_LIKE reducer called with:', {
-        commentId: action.commentId,
-        likeCount: action.likeCount,
-        isLiked: action.isLiked,
-        existingComments: state.comments.map(c => ({ id: c.id, like_count: c.like_count }))
-      });
+      // console.log('UPDATE_COMMENT_LIKE reducer called with:', {
+      //   commentId: action.commentId,
+      //   likeCount: action.likeCount,
+      //   isLiked: action.isLiked,
+      //   existingComments: state.comments.map(c => ({ id: c.id, like_count: c.like_count }))
+      // });
       return {
         ...state,
         comments: state.comments.map((comment) => {

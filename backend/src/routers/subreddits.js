@@ -65,13 +65,13 @@ router.post('/', auth, adminAuth, async (req, res) => {
   try {
     const { name, description } = req.body
 
-    const nameRegex = new RegExp('^[a-z0-9]+$', 'i')
+    // const nameRegex = new RegExp('^[a-z0-9]+$', 'i')
 
-    if (!nameRegex.test(name)) {
-      throw new Error(
-        'Subreddit name must consist only of alphanumeric characters, and must have length at least 1'
-      )
-    }
+    // if (!nameRegex.test(name)) {
+    //   throw new Error(
+    //     'Subreddit name must consist only of alphanumeric characters, and must have length at least 1'
+    //   )
+    // }
 
     const insertSubredditStatement = `
       insert into subreddits(name, description)

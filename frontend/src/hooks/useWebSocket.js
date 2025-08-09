@@ -61,7 +61,7 @@ export const useWebSocket = (postId, showToasts = false) => {
     });
 
     const handleCommentLikeUpdate = (data) => {
-      console.log('Received comment like update:', data);
+      // console.log('Received comment like update:', data);
       // Only update the like count, keep the current user's like status unchanged
       dispatch(updateCommentLike(data.commentId, data.likeCount, null));
     };  
